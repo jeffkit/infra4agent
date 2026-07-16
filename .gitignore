@@ -1,0 +1,21 @@
+# 子仓库（通过 mona.yaml 管理，本地 clone 不纳入大仓追踪）
+/agentproc/
+/argusai/
+/argusai-marketplace/
+/hil-mcp/
+/lavs/
+/ilink-hub/
+/recursive/
+/flowcast/
+/plaita/
+/agently-mail-client/
+/issue-keeper/
+
+# monarbor 本地覆盖
+mona.local.yaml
+
+# 通用
+.DS_Store
+.worktrees/
+.onboarding/
+.cursor/

@@ -1,0 +1,103 @@
+name: infra4agent
+description: "AI Agent 基础设施逻辑大仓 — 汇聚共享执行协议 AgentProc、Agent 运行时、编排、通道、测试与协同工具，供 AI 编程助手统一导航与协作。"
+owner: jeffkit
+repos:
+- path: agentproc
+  name: AgentProc
+  repo_url: git@github.com:jeffkit/agentproc.git
+  description: "连接任意 Agent CLI 与消息平台的最小进程协议：stdin 收 turn、stdout 出 NDJSON 事件；含协议规范、Node/Python/Rust SDK、CLI 与 Profile Hub（claude-code/codex/recursive 等）。被 flowcast、ilink-hub、agently-mail、issue-keeper 等共用。"
+  tech_stack: [Protocol, Node.js, Python, Rust, NDJSON, CLI]
+  branches:
+    dev: main
+    test: main
+    prod: main
+- path: argusai
+  name: ArgusAI
+  repo_url: git@github.com:jeffkit/argusai.git
+  description: "配置驱动的 Docker 容器端到端测试平台：用 YAML 声明测试环境、Mock 服务与用例，自动构建镜像、管理容器并执行测试；内置 MCP Server 让 AI 编程助手直接跑 E2E 测试。"
+  tech_stack: [TypeScript, Node.js, pnpm, Docker, Vitest, Playwright, MCP]
+  branches:
+    dev: develop
+    test: release/test
+    prod: main
+- path: argusai-marketplace
+  name: ArgusAI Marketplace
+  repo_url: git@github.com:jeffkit/argusai-marketplace.git
+  description: "ArgusAI 的 Claude Code Plugin marketplace 分发仓库：业务团队通过 claude plugin 安装后即可让 AI 助手执行 ArgusAI E2E 测试，包含 MCP 工具与斜杠命令定义。"
+  tech_stack: [Markdown, Claude Code Plugin, MCP]
+  branches:
+    dev: develop
+    test: release/test
+    prod: main
+- path: hil-mcp
+  name: hitl-mcp
+  repo_url: git@github.com:jeffkit/hitl-mcp.git
+  description: "Human-in-the-Loop MCP：让 AI Agent 在执行关键操作前，通过微信/企业微信向人确认。包含 hitl-server（FastAPI + React 管理台）和 Python/TypeScript 两版 MCP 客户端。"
+  tech_stack: [Python, FastAPI, React, TypeScript, MCP, SQLAlchemy]
+  branches:
+    dev: develop
+    test: release/test
+    prod: main
+- path: lavs
+  name: LAVS
+  repo_url: git@github.com:jeffkit/lavs.git
+  description: "Local Agent View Service：桥接 AI Agent 与可视化 UI 的协议与 SDK，让本地 Agent 把结构化数据以可交互组件形式呈现，并与对话侧双向同步。"
+  tech_stack: [TypeScript, pnpm, SDK, Protocol]
+  branches:
+    dev: main
+    test: main
+    prod: main
+- path: ilink-hub
+  name: iLink Hub
+  repo_url: git@github.com:jeffkit/ilink-hub.git
+  description: "微信 ClawBot iLink 多路复用 Hub：把一个微信账号透明代理到多台机器/多个 Agent 后端，解决 iLink 单连接互斥锁冲突。"
+  tech_stack: [Rust, Tokio, SQLite, Docker]
+  branches:
+    dev: main
+    test: main
+    prod: main
+- path: recursive
+  name: Recursive
+  repo_url: git@github.com:jeffkit/recursive.git
+  description: "Rust 编码 Agent 平台：小型 ReAct 内核 + HTTP API / MCP / 多 Agent 编排 / TUI，面向完整开发工具链。"
+  tech_stack: [Rust, ReAct, MCP, TUI, HTTP API]
+  branches:
+    dev: main
+    test: main
+    prod: main
+- path: flowcast
+  name: Flowcast
+  repo_url: git@github.com:jeffkit/flowcast.git
+  description: "轻量 workflow 编排框架（原 flowx 目录）：断点续跑、HITL、多 CLI/Agent 调度、自改安全沙箱与质量门；含 L3 codegen 编排层。npm 包名 flowcast。"
+  tech_stack: [Node.js, ESM, Workflow, HITL, AgentProc]
+  branches:
+    dev: main
+    test: main
+    prod: main
+- path: plaita
+  name: Plaita
+  repo_url: git@github.com:jeffkit/plaita.git
+  description: "Plaita 逻辑编排系统的官方 Python 运行时（原 loki/pyloki）：将 JSON/@flow DSL 流程解析为可执行 Flow，插件化 Node，支持同步/生成器/分布式断点续执。"
+  tech_stack: [Python, Pydantic, DSL, Workflow]
+  branches:
+    dev: main
+    test: main
+    prod: main
+- path: agently-mail-client
+  name: Agently Mail Client
+  repo_url: git@github.com:jeffkit/agently-mail-client.git
+  description: "把邮箱变成 AI Agent 通信通道：收件 → Agent 处理 → 自动回复，支持多 Agent 路由、批量处理与发件人访问控制。"
+  tech_stack: [Node.js, AgentProc, Dashboard, Email]
+  branches:
+    dev: main
+    test: main
+    prod: main
+- path: issue-keeper
+  name: Issue Keeper
+  repo_url: git@github.com:jeffkit/issue-keeper.git
+  description: "监控 GitHub issue/PR：安全过滤后再经 AgentProc 调 Agent 处理，并把回复写回评论；支持多仓绑定与防循环。"
+  tech_stack: [Python, FastAPI, AgentProc, GitHub]
+  branches:
+    dev: main
+    test: main
+    prod: main
