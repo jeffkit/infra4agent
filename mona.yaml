@@ -101,3 +101,12 @@ repos:
     dev: main
     test: main
     prod: main
+- path: web-bridge
+  name: web-bridge
+  repo_url: git@github.com:jeffkit/web-bridge.git
+  description: "纯注入式 DOM/a11y 桥：在 Electron/Tauri 等应用的 DevTools console 粘贴脚本，即可让本机 AI Agent（MCP/CLI）实时检查页面并执行点击、输入；无需改应用源码、CDP 或浏览器扩展。支持可分发插件。"
+  tech_stack: [TypeScript, Node.js, MCP, WebSocket, DOM, a11y]
+  branches:
+    dev: main
+    test: main
+    prod: main

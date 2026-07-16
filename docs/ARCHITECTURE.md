@@ -28,7 +28,7 @@ monarbor pull
 
 ## 2. 分层架构
 
-从下到上：共享协议 → 通道 → Agent 运行时 → 编排 → 视图 → 测试/分发 → 协同工具。
+从下到上：共享协议 → 通道 → Agent 运行时 → 编排 → 视图/页面操控 → 测试/分发 → 协同工具。
 
 ```mermaid
 flowchart TB
@@ -42,8 +42,9 @@ flowchart TB
     AM -->|npx argusai-mcp| AA
   end
 
-  subgraph ui["Agent 视图层"]
+  subgraph ui["Agent 视图 / 页面操控层"]
     LAVS["lavs"]
+    WB["web-bridge"]
   end
 
   subgraph orch["编排层（两套并行）"]
@@ -92,7 +93,7 @@ flowchart TB
 1. **agentproc 是横切共享协议**：通道、编排、协同多条链路在进程边界上汇聚到它（stdin turn / stdout NDJSON）。
 2. **flowcast 与 plaita 是并行编排栈**：产品叙事接近，本大仓内**无互依赖**。
 3. **通道三件套**（微信 hub / HITL / 邮件）入口不同，常接到 AgentProc 或 iLink。
-4. **lavs** 在本大仓内几乎悬空；真实宿主在仓外 **AgentStudio**。
+4. **lavs** 与 **web-bridge** 同属「Agent ↔ UI」叙事但路径不同：lavs 是结构化 View 协议（宿主多为仓外 AgentStudio）；web-bridge 是注入式 DOM/a11y 操控（Electron/Tauri console），本大仓内暂无兄弟硬依赖。
 5. **argusai** 横切做 E2E；**marketplace** 只做 Claude Code 侧分发。
 
 ---
@@ -109,6 +110,7 @@ flowchart TB
 | `flowcast` | Flowcast | Node workflow：断点续跑、HITL、多 CLI、L3 codegen（曾用名 flowx） | 编排（Agent/CLI 向） |
 | `plaita` | Plaita | Python 逻辑编排运行时（JSON/@flow；曾用路径 loki/pyloki） | 编排（流程引擎向） |
 | `lavs` | LAVS | Agent 结构化 UI 协议与 TS/Py SDK | Agent 视图 |
+| `web-bridge` | web-bridge | 注入式 DOM/a11y 桥：MCP/CLI 操控桌面 WebView 页面 | 页面操控 |
 | `argusai` | ArgusAI | YAML 驱动 Docker E2E + `argusai-mcp` | 测试 |
 | `argusai-marketplace` | ArgusAI Marketplace | Claude Code Plugin，拉起 `argusai-mcp` | 测试分发 |
 | `issue-keeper` | Issue Keeper | 监控 issue → screener → agentproc → 写回评论 | 协同工具 |
@@ -149,6 +151,7 @@ flowchart TB
 |------|------|
 | `plaita` | 与 flowcast 无代码互依赖；自有 approval 节点，非 hil-mcp |
 | `lavs` | 本大仓无引用；集成在 AgentStudio |
+| `web-bridge` | 本大仓无兄弟硬依赖；经 MCP/HTTP 被任意 Agent 消费 |
 | `argusai → hil-mcp` | 路线图提及，非当前硬依赖 |
 | `argusai → recursive` | 兼容断言插件（部分已 deprecated） |
 
@@ -225,6 +228,9 @@ flowchart LR
 6. **可视化 Agent 面**  
    Agent 暴露 LAVS manifest →（仓外）AgentStudio / 前端渲染。
 
+7. **操控桌面应用 WebView**  
+   `web-bridge serve` → 粘贴 inject.js 到 Electron/Tauri DevTools → Agent 经 MCP/CLI 定位与点击输入。
+
 ---
 
 ## 7. 边界：什么不在本大仓
@@ -249,6 +255,7 @@ flowchart LR
 5. **agentproc 版本分裂**（如 flowcast 与 mail-client 锁定版本差较大）的兼容边界。
 6. **recursive e2e 的 `file:…/infra4agent/argusai`** 依赖大仓相对布局，单独 clone 可能失效。
 7. **plaita 与 flowcast 是否计划互通**——当前是缺口，不是隐藏依赖。
+8. **web-bridge 与 lavs** 是否在产品上会统一「Agent 看见/操控 UI」叙事——当前实现独立。
 
 ---
 

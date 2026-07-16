@@ -10,6 +10,7 @@
 /plaita/
 /agently-mail-client/
 /issue-keeper/
+/web-bridge/
 
 # monarbor 本地覆盖
 mona.local.yaml

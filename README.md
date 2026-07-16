@@ -21,6 +21,7 @@ AI Agent **基础设施逻辑大仓** — 用 [monarbor](https://pypi.org/projec
 | [flowcast](https://github.com/jeffkit/flowcast) | Node workflow 编排（断点续跑 / HITL / L3 codegen） |
 | [plaita](https://github.com/jeffkit/plaita) | Python 逻辑编排运行时（JSON / `@flow`） |
 | [lavs](https://github.com/jeffkit/lavs) | Local Agent View：Agent ↔ 可视化 UI 协议 |
+| [web-bridge](https://github.com/jeffkit/web-bridge) | 注入式 DOM/a11y 桥：Agent 操控 Electron/Tauri 页面 |
 | [argusai](https://github.com/jeffkit/argusai) | 配置驱动的 Docker E2E + MCP |
 | [argusai-marketplace](https://github.com/jeffkit/argusai-marketplace) | ArgusAI 的 Claude Code Plugin 分发 |
 | [issue-keeper](https://github.com/jeffkit/issue-keeper) | Issue 监控 → 安全过滤 → Agent 回复 |
