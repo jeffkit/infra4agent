@@ -262,6 +262,8 @@ flowchart LR
 
 | 文件 | 说明 |
 |------|------|
+| `README.md` | 人类向总览与快速开始 |
+| `AGENTS.md` | AI 入仓导航入口 |
 | `mona.yaml` | 子仓清单与描述 |
 | `docs/DOC_CODE_MAP.md` | 文档 ↔ 代码映射 |
-| 各子仓 `AGENTS.md` | AI 入仓导航 |
+| 各子仓 `AGENTS.md` | 子仓内 AI 导航 |

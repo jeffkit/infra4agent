@@ -6,6 +6,8 @@
 
 | 文档 | 代码路径模式 | 说明 |
 |------|----------------|------|
+| `README.md` | `mona.yaml` | 人类向总览与子仓表；清单以 mona.yaml 为准 |
+| `AGENTS.md` | `mona.yaml`, `docs/ARCHITECTURE.md` | AI 入仓导航；跨仓结构指向架构文档 |
 | `docs/ARCHITECTURE.md` | `mona.yaml` | 大仓分层、子仓角色与依赖关系；子仓清单以 mona.yaml 为准 |
 | `docs/ARCHITECTURE.md` | `.gitignore` | 子仓目录排除规则须与 mona.yaml 中 path 对齐 |
 | `mona.yaml` | 各 `*/` 子仓根（本地 clone） | path / repo_url / description / tech_stack / branches |
