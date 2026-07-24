@@ -14,10 +14,11 @@
 
 ## 架构地图
 
-分层（下→上）：`agentproc` → 通道（ilink-hub / hil-mcp / agently-mail）→ `recursive` → 编排（flowcast ‖ plaita）→ 视图/操控（lavs ‖ web-bridge）→ argusai(+marketplace) → issue-keeper。  
+分层（下→上）：`agentproc` → 通道（ilink-hub / im-agentproc / hil-mcp / agently-mail）→ `recursive` → 编排（flowcast ‖ plaita）→ 视图/操控（lavs ‖ web-bridge）→ argusai(+marketplace) → issue-keeper。  
 **编排双轨**：flowcast（Node/CLI）与 plaita（Python Flow）并行、无互依赖。  
 **视图双轨**：lavs（结构化 View 协议）与 web-bridge（注入式 DOM 操控）互补、无互依赖。  
-**横切协议**：多数通道/协同经 agentproc（stdin turn / stdout NDJSON）。
+**横切协议**：多数通道/协同经 agentproc（stdin turn / stdout NDJSON）。  
+**新增 IM 桥接**：`im-agentproc` 从 `ilink-hub` 的 `src/bridge` 抽离，是 agentproc-native 的 IM→本地 CLI 桥接运行时——连 iLink Hub 作虚拟 token 后端，跑 agentproc profile（claude-code/codex 等），未来经 `Transport` trait 扩展飞书/Telegram。
 
 关键路径：
 - `mona.yaml` — 子仓清单（path / url / description / branches）
@@ -52,7 +53,7 @@ monarbor add --path <p> --name "<n>" --url <git-url> \
 
 ## 当前状态
 
-**当前里程碑：** 12 子仓已登记；架构文档持续同步。
+**当前里程碑：** 13 子仓已登记（含从 ilink-hub 抽离的 im-agentproc）；架构文档持续同步。
 
 ## 深入阅读
 

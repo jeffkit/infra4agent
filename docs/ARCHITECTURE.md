@@ -1,6 +1,6 @@
 # infra4agent 架构文档
 
-> 最后更新：2026-07-16  
+> 最后更新：2026-07-20  
 > 维护者：jeffkit  
 > 配置源：根目录 `mona.yaml`（子仓清单以该文件为准）
 
@@ -58,6 +58,7 @@ flowchart TB
 
   subgraph channel["通道层"]
     IH["ilink-hub"]
+    IMAP["im-agentproc"]
     HITL["hil-mcp"]
     MAIL["agently-mail-client"]
   end
@@ -81,6 +82,8 @@ flowchart TB
   IH --> ILINK
   IH -.->|同源抽出| MAIL
   MAIL -->|npm| AP
+  IMAP -->|Rust SDK| AP
+  IMAP -.->|虚拟 token 后端 / 同源抽出| IH
   HITL -->|默认可直连| ILINK
   IK -->|CLI| AP
   IK -.->|可选 HitL| HITL
@@ -95,6 +98,7 @@ flowchart TB
 3. **通道三件套**（微信 hub / HITL / 邮件）入口不同，常接到 AgentProc 或 iLink。
 4. **lavs** 与 **web-bridge** 同属「Agent ↔ UI」叙事但路径不同：lavs 是结构化 View 协议（宿主多为仓外 AgentStudio）；web-bridge 是注入式 DOM/a11y 操控（Electron/Tauri console），本大仓内暂无兄弟硬依赖。
 5. **argusai** 横切做 E2E；**marketplace** 只做 Claude Code 侧分发。
+6. **im-agentproc 是 agentproc-native 的 IM 桥接运行时**：从 ilink-hub 的 `src/bridge` 抽离，作为虚拟 token 后端连 Hub，把入站 IM 消息路由到 agentproc profile（P0 exec）；未来经 `Transport` trait 扩展飞书/Telegram。
 
 ---
 
@@ -104,6 +108,7 @@ flowchart TB
 |------|------|------------|--------|
 | `agentproc` | AgentProc | 桥接消息平台与 Agent CLI 的最小进程协议 + SDK + Profile Hub | 共享协议 |
 | `ilink-hub` | iLink Hub | 微信 ClawBot iLink 多路复用与 Bridge | 通道（微信） |
+| `im-agentproc` | IM-AgentProc | 从 ilink-hub 抽离的 IM→AgentProc 桥接运行时（iLink/微信 → agentproc profile） | 通道（IM 桥接） |
 | `hil-mcp` | hitl-mcp | 关键操作前经微信/企微向人确认的 HITL MCP | 通道（人机确认） |
 | `agently-mail-client` | Agently Mail | 邮箱 → AgentProc → 自动回复 | 通道（邮件） |
 | `recursive` | Recursive | Rust ReAct 编码 Agent（HTTP/MCP/TUI/微信） | Agent 运行时 |
@@ -131,6 +136,7 @@ flowchart TB
 | `issue-keeper → agentproc` | 主链路 spawn CLI（非 Python 包依赖） | `issue_keeper/profile.py` |
 | `recursive/.dev/flows → flowcast` | 自改/开发 flow | `.dev/flows/package.json` |
 | `recursive/e2e → argusai` | E2E plugins（常为 file: 布局依赖） | `e2e/plugins/package.json` |
+| `im-agentproc → agentproc` | Rust crate 硬依赖（crates.io 0.11，非 git rev pin） | `im-agentproc/Cargo.toml` |
 
 ### 4.2 协议 / 可选集成
 
@@ -144,6 +150,8 @@ flowchart TB
 | `issue-keeper → hil-mcp` | keeper 巡检 HitL（可选 MCP） |
 | `agently-mail-client → argusai` | 可选 `e2e.yaml` |
 | `hil-mcp → iLink API` | 默认可直连腾讯端点；语义上可兼容 hub 代理 |
+| `im-agentproc ↔ ilink-hub` | 从 hub `src/bridge` 抽离；运行期作为虚拟 token 后端连 Hub 跑 profile | `im-agentproc/src/bridge/transport.rs` |
+| `im-agentproc → agentproc` | 每条入站 IM 消息触发一次 agentproc profile（P0 exec 协议） | `im-agentproc/src/bin/im-agentproc.rs` |
 
 ### 4.3 文档级 / 无兄弟硬边
 
@@ -201,6 +209,7 @@ flowchart LR
 | 通道 | 项目 | 汇聚点 |
 |------|------|--------|
 | 微信多路 | ilink-hub | iLink + AgentProc Bridge |
+| IM→AgentProc 桥接 | im-agentproc | agentproc profile（P0 exec）；连 iLink Hub 作虚拟 token 后端 |
 | 人确认 | hil-mcp | 微信 ClawBot / 企微 AI Bot（MCP） |
 | 邮件 | agently-mail-client | AgentProc |
 
@@ -231,6 +240,9 @@ flowchart LR
 7. **操控桌面应用 WebView**  
    `web-bridge serve` → 粘贴 inject.js 到 Electron/Tauri DevTools → Agent 经 MCP/CLI 定位与点击输入。
 
+8. **IM 经 AgentProc 桥接（新）**  
+   用户 → iLink → `ilink-hub` → `im-agentproc`（虚拟 token 后端）→ agentproc profile（claude-code/codex…）→ 回复；与链路 1 的区别是桥接层走 agentproc-native 的 profile 协议，而非 hub 自带的通用 YAML CLI 后端。
+
 ---
 
 ## 7. 边界：什么不在本大仓
@@ -256,6 +268,7 @@ flowchart LR
 6. **recursive e2e 的 `file:…/infra4agent/argusai`** 依赖大仓相对布局，单独 clone 可能失效。
 7. **plaita 与 flowcast 是否计划互通**——当前是缺口，不是隐藏依赖。
 8. **web-bridge 与 lavs** 是否在产品上会统一「Agent 看见/操控 UI」叙事——当前实现独立。
+9. **ilink-hub 的 `ilink-hub-bridge` 与新建 `im-agentproc` 的关系**——后者从前者 `src/bridge` 抽离，是 agentproc-native 的 IM→本地 CLI 桥接运行时（跑 agentproc profile，遵循 P0 exec）；前者仍保留通用 YAML 驱动的本地 CLI 后端。需确认哪边为 IM→AgentProc 的正式入口（提案 `bridge-as-multi-im-runtime` 指向 im-agentproc 为后继）。
 
 ---
 

@@ -1,6 +1,6 @@
 # 文档 ↔ 代码映射
 
-> 最后更新：2026-07-16
+> 最后更新：2026-07-20
 
 大仓根只管理配置与导航文档；子仓源码在各自 git 仓库中（见 `.gitignore`）。
 
@@ -12,3 +12,5 @@
 | `docs/ARCHITECTURE.md` | `.gitignore` | 子仓目录排除规则须与 mona.yaml 中 path 对齐 |
 | `mona.yaml` | 各 `*/` 子仓根（本地 clone） | path / repo_url / description / tech_stack / branches |
 | 各子仓 `AGENTS.md` | 对应子仓源码树 | 仓内导航；不在大仓 git 追踪范围内 |
+| `lavs/docs/DISPATCH-PROTOCOL.md` | `lavs/schema/lavs-manifest.schema.json`, `lavs/sdk/typescript/runtime/src/{loader,tool-generator,subscription-manager}.ts` | LAVS View 分发协议设计草案：以 content-type 为主抽象、pinned/dispatch 两种宿主模式、多 view 调度；草案，尚未落入 SPEC |
+| `mona.yaml` | `im-agentproc/` | 新增子仓：从 ilink-hub 抽离的 IM→AgentProc 桥接运行时（Rust crate，依赖 agentproc SDK）；清单见 `mona.yaml`，本地 clone 经 `.gitignore` 排除 |

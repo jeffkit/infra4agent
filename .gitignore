@@ -11,6 +11,7 @@
 /agently-mail-client/
 /issue-keeper/
 /web-bridge/
+/im-agentproc/
 
 # monarbor 本地覆盖
 mona.local.yaml
@@ -20,3 +21,4 @@ mona.local.yaml
 .worktrees/
 .onboarding/
 .cursor/
+.workbuddy/

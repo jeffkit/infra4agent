@@ -15,6 +15,7 @@ AI Agent **基础设施逻辑大仓** — 用 [monarbor](https://pypi.org/projec
 |------|------|
 | [agentproc](https://github.com/jeffkit/agentproc) | 消息平台 ↔ Agent CLI 的最小进程协议 + SDK + Profile Hub |
 | [ilink-hub](https://github.com/jeffkit/ilink-hub) | 微信 ClawBot iLink 多路复用 Hub |
+| [im-agentproc](https://github.com/jeffkit/im-agentproc) | 从 ilink-hub 抽离的 IM→AgentProc 桥接运行时（iLink/微信 → agentproc profile） |
 | [hil-mcp](https://github.com/jeffkit/hitl-mcp) | Human-in-the-Loop MCP（微信 / 企微确认） |
 | [agently-mail-client](https://github.com/jeffkit/agently-mail-client) | 邮箱作为 Agent 通信通道 |
 | [recursive](https://github.com/jeffkit/recursive) | Rust ReAct 编码 Agent 平台 |

@@ -56,6 +56,15 @@ repos:
     dev: main
     test: main
     prod: main
+- path: im-agentproc
+  name: IM-AgentProc
+  repo_url: git@github.com:jeffkit/im-agentproc.git
+  description: "IM 侧运行时（从 ilink-hub 的 src/bridge 抽离）：把 IM 传输（当前 iLink/微信，未来经 Transport trait 扩展飞书/Telegram）桥接到 agentproc profile——每条入站 IM 消息触发一次 agentproc profile 运行。作为虚拟 token 后端连 iLink Hub，运行遵循 P0 exec 协议的内置 profile（claude-code/codex 等）。"
+  tech_stack: [Rust, Tokio, agentproc, CLI, NDJSON]
+  branches:
+    dev: main
+    test: main
+    prod: main
 - path: recursive
   name: Recursive
   repo_url: git@github.com:jeffkit/recursive.git
