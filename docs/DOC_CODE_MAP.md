@@ -14,3 +14,4 @@
 | 各子仓 `AGENTS.md` | 对应子仓源码树 | 仓内导航；不在大仓 git 追踪范围内 |
 | `lavs/docs/DISPATCH-PROTOCOL.md` | `lavs/schema/lavs-manifest.schema.json`, `lavs/sdk/typescript/runtime/src/{loader,tool-generator,subscription-manager}.ts` | LAVS View 分发协议设计草案：以 content-type 为主抽象、pinned/dispatch 两种宿主模式、多 view 调度；草案，尚未落入 SPEC |
 | `mona.yaml` | `im-agentproc/` | 新增子仓：从 ilink-hub 抽离的 IM→AgentProc 桥接运行时（Rust crate，依赖 agentproc SDK）；清单见 `mona.yaml`，本地 clone 经 `.gitignore` 排除 |
+| `docs/LAVS_AGENT_SOP.md` | `bundles/*/lavs.json`, `lavs/sdk/typescript/runtime/src/{mcp-server,tool-generator,cli}.ts` | Agent 使用 LAVS 的标准操作流程：何时用 LAVS、如何用 lavs_discover + lavs_call、Daemon 管理；束缚于 lavs-runtime v0.2+ |
