@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Todo List</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: #0f172a;
+    color: #e2e8f0;
+    min-height: 100vh;
+    padding: 24px;
+  }
+  h1 { font-size: 1.4rem; font-weight: 700; margin-bottom: 4px; color: #f8fafc; }
+  .subtitle { font-size: 0.75rem; color: #64748b; margin-bottom: 20px; }
+
+  .add-row {
+    display: flex; gap: 8px; margin-bottom: 20px;
+  }
+  .add-row input {
+    flex: 1;
+    background: #1e293b;
+    border: 1px solid #334155;
+    color: #e2e8f0;
+    padding: 8px 12px;
+    border-radius: 8px;
+    font-size: 0.875rem;
+    outline: none;
+  }
+  .add-row input:focus { border-color: #6366f1; }
+  .add-row select {
+    background: #1e293b;
+    border: 1px solid #334155;
+    color: #94a3b8;
+    padding: 8px 10px;
+    border-radius: 8px;
+    font-size: 0.8rem;
+    outline: none;
+  }
+  button {
+    background: #6366f1;
+    color: #fff;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    cursor: pointer;
+    font-weight: 600;
+    transition: background 0.15s;
+  }
+  button:hover { background: #4f46e5; }
+  button.ghost {
+    background: transparent;
+    color: #64748b;
+    border: 1px solid #334155;
+    font-weight: 400;
+  }
+  button.ghost:hover { background: #1e293b; color: #e2e8f0; }
+
+  .filters {
+    display: flex; gap: 6px; margin-bottom: 16px;
+  }
+  .filters button {
+    background: transparent;
+    border: 1px solid #334155;
+    color: #64748b;
+    padding: 4px 12px;
+    font-size: 0.75rem;
+    font-weight: 500;
+  }
+  .filters button.active, .filters button:hover {
+    background: #1e293b;
+    border-color: #6366f1;
+    color: #a5b4fc;
+  }
+
+  .todo-list { display: flex; flex-direction: column; gap: 6px; }
+  .todo-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 8px;
+    padding: 10px 14px;
+    transition: border-color 0.15s;
+  }
+  .todo-item:hover { border-color: #475569; }
+  .todo-item.done { opacity: 0.5; }
+  .todo-item .check {
+    width: 18px; height: 18px;
+    border-radius: 50%;
+    border: 2px solid #475569;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    transition: all 0.15s;
+  }
+  .todo-item.done .check {
+    background: #22c55e;
+    border-color: #22c55e;
+  }
+  .todo-item .check::after {
+    content: '';
+    display: none;
+    width: 6px; height: 4px;
+    border-left: 2px solid #fff;
+    border-bottom: 2px solid #fff;
+    transform: rotate(-45deg);
+    margin-top: -2px;
+  }
+  .todo-item.done .check::after { display: block; }
+  .todo-item .text {
+    flex: 1;
+    font-size: 0.875rem;
+    color: #e2e8f0;
+  }
+  .todo-item.done .text { text-decoration: line-through; color: #475569; }
+  .badge {
+    font-size: 0.65rem;
+    font-weight: 600;
+    padding: 2px 7px;
+    border-radius: 999px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  .badge.high { background: #450a0a; color: #f87171; }
+  .badge.medium { background: #431407; color: #fb923c; }
+  .badge.low { background: #052e16; color: #4ade80; }
+
+  .del-btn {
+    background: transparent;
+    border: none;
+    color: #475569;
+    cursor: pointer;
+    padding: 2px 6px;
+    font-size: 1rem;
+    border-radius: 4px;
+    line-height: 1;
+  }
+  .del-btn:hover { background: #1e293b; color: #f87171; }
+
+  .footer {
+    margin-top: 16px;
+    display: flex; justify-content: space-between; align-items: center;
+    color: #475569;
+    font-size: 0.75rem;
+  }
+
+  .empty {
+    text-align: center;
+    color: #475569;
+    padding: 32px;
+    font-size: 0.875rem;
+  }
+  .spinner {
+    text-align: center; padding: 24px; color: #475569;
+    animation: pulse 1.2s infinite;
+  }
+  @keyframes pulse { 0%,100%{opacity:1}50%{opacity:0.4} }
+
+  .toast {
+    position: fixed; bottom: 20px; right: 20px;
+    background: #1e293b;
+    border: 1px solid #334155;
+    color: #a5b4fc;
+    padding: 8px 14px;
+    border-radius: 8px;
+    font-size: 0.8rem;
+    opacity: 0;
+    transition: opacity 0.3s;
+    pointer-events: none;
+  }
+  .toast.show { opacity: 1; }
+</style>
+</head>
+<body>
+
+<h1>✅ Todo List</h1>
+<p class="subtitle">Managed by your AI agent · auto-refreshes on changes</p>
+
+<div class="add-row">
+  <input id="newText" type="text" placeholder="Add a task…" />
+  <select id="priority">
+    <option value="medium">Medium</option>
+    <option value="high">High</option>
+    <option value="low">Low</option>
+  </select>
+  <button onclick="addTodo()">Add</button>
+</div>
+
+<div class="filters">
+  <button id="f-all" class="active" onclick="setFilter('all')">All</button>
+  <button id="f-active" onclick="setFilter('active')">Active</button>
+  <button id="f-done" onclick="setFilter('done')">Done</button>
+</div>
+
+<div id="list" class="todo-list"><div class="spinner">Loading…</div></div>
+
+<div class="footer">
+  <span id="count"></span>
+  <button class="ghost" onclick="clearDone()">Clear done</button>
+</div>
+
+<div id="toast" class="toast"></div>
+
+<script>
+  let currentFilter = 'all';
+  let todos = [];
+
+  // ── LAVS bridge (postMessage) ───────────────────────────────────────────
+  function lavs(endpoint, params) {
+    return new Promise((resolve, reject) => {
+      const id = Math.random().toString(36).slice(2);
+      function handler(e) {
+        if (!e.data || e.data.id !== id) return;
+        window.removeEventListener('message', handler);
+        if (e.data.type === 'lavs-result') resolve(e.data.result);
+        else reject(new Error(e.data.error || 'lavs error'));
+      }
+      window.addEventListener('message', handler);
+      window.parent.postMessage({ type: 'lavs-call', id, endpoint, params }, '*');
+      setTimeout(() => { window.removeEventListener('message', handler); reject(new Error('timeout')); }, 10000);
+    });
+  }
+
+  // ── Listen for SSE agent-action (auto-refresh) ──────────────────────────
+  window.addEventListener('message', (e) => {
+    if (e.data && e.data.type === 'lavs-agent-action') {
+      loadTodos();
+      showToast('Updated by agent');
+    }
+  });
+
+  // ── UI helpers ──────────────────────────────────────────────────────────
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 2500);
+  }
+
+  function setFilter(f) {
+    currentFilter = f;
+    ['all','active','done'].forEach(x => document.getElementById('f-'+x).classList.toggle('active', x===f));
+    loadTodos();
+  }
+
+  function renderTodos() {
+    const el = document.getElementById('list');
+    const visible = currentFilter === 'all' ? todos
+                  : currentFilter === 'active' ? todos.filter(t => !t.done)
+                  : todos.filter(t => t.done);
+
+    if (!visible.length) {
+      el.innerHTML = `<div class="empty">${currentFilter === 'done' ? 'No completed tasks.' : 'No tasks yet. Add one above!'}</div>`;
+    } else {
+      el.innerHTML = visible.map(t => `
+        <div class="todo-item${t.done?' done':''}" data-id="${t.id}">
+          <div class="check" onclick="toggle('${t.id}')"></div>
+          <span class="text">${escHtml(t.text)}</span>
+          ${t.priority ? `<span class="badge ${t.priority}">${t.priority}</span>` : ''}
+          <button class="del-btn" onclick="del('${t.id}')" title="Delete">✕</button>
+        </div>`).join('');
+    }
+
+    const active = todos.filter(t => !t.done).length;
+    document.getElementById('count').textContent = `${active} task${active !== 1 ? 's' : ''} remaining`;
+  }
+
+  function escHtml(s) {
+    return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  // ── Data operations ─────────────────────────────────────────────────────
+  async function loadTodos() {
+    try {
+      todos = await lavs('listTodos', { filter: 'all' });
+      renderTodos();
+    } catch (e) {
+      document.getElementById('list').innerHTML = `<div class="empty">Error loading: ${e.message}</div>`;
+    }
+  }
+
+  async function addTodo() {
+    const input = document.getElementById('newText');
+    const text = input.value.trim();
+    if (!text) return;
+    const priority = document.getElementById('priority').value;
+    try {
+      await lavs('addTodo', { text, priority });
+      input.value = '';
+      await loadTodos();
+      showToast('Task added');
+    } catch (e) { showToast('Error: ' + e.message); }
+  }
+
+  async function toggle(id) {
+    try {
+      await lavs('toggleTodo', { id });
+      await loadTodos();
+    } catch (e) { showToast('Error: ' + e.message); }
+  }
+
+  async function del(id) {
+    try {
+      await lavs('deleteTodo', { id });
+      await loadTodos();
+      showToast('Deleted');
+    } catch (e) { showToast('Error: ' + e.message); }
+  }
+
+  async function clearDone() {
+    try {
+      const { removed } = await lavs('clearDone', {});
+      await loadTodos();
+      if (removed > 0) showToast(`Cleared ${removed} task${removed > 1 ? 's' : ''}`);
+    } catch (e) { showToast('Error: ' + e.message); }
+  }
+
+  // Enter key to add
+  document.getElementById('newText').addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') addTodo();
+  });
+
+  loadTodos();
+</script>
+</body>
+</html>

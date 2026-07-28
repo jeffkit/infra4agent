@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Notes</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: #0f172a;
+    color: #e2e8f0;
+    min-height: 100vh;
+    display: flex;
+  }
+  /* Sidebar */
+  .sidebar {
+    width: 280px;
+    min-width: 220px;
+    border-right: 1px solid #1e293b;
+    display: flex;
+    flex-direction: column;
+    background: #0a0f1e;
+  }
+  .sidebar-header {
+    padding: 20px 16px 12px;
+    border-bottom: 1px solid #1e293b;
+  }
+  .sidebar-header h1 { font-size: 1.1rem; font-weight: 700; color: #f1f5f9; }
+  .sidebar-header p { font-size: 0.7rem; color: #475569; margin-top: 2px; }
+  .search-box {
+    padding: 12px 12px 8px;
+  }
+  .search-box input {
+    width: 100%;
+    background: #1e293b;
+    border: 1px solid #334155;
+    color: #e2e8f0;
+    padding: 6px 10px;
+    border-radius: 6px;
+    font-size: 0.8rem;
+    outline: none;
+  }
+  .search-box input:focus { border-color: #6366f1; }
+  .note-list {
+    flex: 1;
+    overflow-y: auto;
+    padding: 4px 0;
+  }
+  .note-item {
+    padding: 10px 14px;
+    cursor: pointer;
+    border-left: 3px solid transparent;
+    transition: background 0.1s;
+  }
+  .note-item:hover { background: #1e293b; }
+  .note-item.active { background: #1e293b; border-left-color: #6366f1; }
+  .note-item .title { font-size: 0.85rem; font-weight: 600; color: #e2e8f0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .note-item .preview { font-size: 0.72rem; color: #64748b; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .note-item .tags { margin-top: 4px; display: flex; gap: 4px; flex-wrap: wrap; }
+  .tag { font-size: 0.6rem; padding: 1px 6px; background: #1e3a5f; color: #93c5fd; border-radius: 999px; }
+  .add-btn {
+    margin: 10px 12px;
+    background: #6366f1;
+    color: #fff;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 8px;
+    font-size: 0.82rem;
+    font-weight: 600;
+    cursor: pointer;
+    width: calc(100% - 24px);
+  }
+  .add-btn:hover { background: #4f46e5; }
+
+  /* Main editor */
+  .main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    padding: 28px 32px;
+    overflow: hidden;
+  }
+  .placeholder {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: #334155;
+    gap: 8px;
+  }
+  .placeholder .icon { font-size: 3rem; }
+  .placeholder p { font-size: 0.85rem; }
+
+  .editor-header {
+    margin-bottom: 16px;
+  }
+  .editor-header input {
+    width: 100%;
+    background: transparent;
+    border: none;
+    border-bottom: 2px solid #1e293b;
+    color: #f1f5f9;
+    font-size: 1.4rem;
+    font-weight: 700;
+    padding: 4px 0 8px;
+    outline: none;
+  }
+  .editor-header input:focus { border-bottom-color: #6366f1; }
+  .tags-input {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+    flex-wrap: wrap;
+    margin-top: 8px;
+  }
+  .tags-input .tag { cursor: pointer; }
+  .tags-input .tag:hover { background: #7f1d1d; color: #fca5a5; }
+  .tags-input input {
+    background: transparent;
+    border: none;
+    color: #94a3b8;
+    font-size: 0.75rem;
+    outline: none;
+    width: 120px;
+  }
+  .editor-body {
+    flex: 1;
+    overflow-y: auto;
+    margin-top: 16px;
+  }
+  .editor-body textarea {
+    width: 100%;
+    height: 100%;
+    min-height: 200px;
+    background: transparent;
+    border: none;
+    color: #cbd5e1;
+    font-size: 0.9rem;
+    line-height: 1.7;
+    resize: none;
+    outline: none;
+    font-family: inherit;
+  }
+  .editor-actions {
+    display: flex; gap: 8px; margin-top: 16px; justify-content: flex-end;
+  }
+  button {
+    background: #6366f1;
+    color: #fff;
+    border: none;
+    padding: 7px 16px;
+    border-radius: 8px;
+    font-size: 0.82rem;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  button:hover { background: #4f46e5; }
+  button.danger {
+    background: transparent;
+    border: 1px solid #334155;
+    color: #f87171;
+  }
+  button.danger:hover { background: #450a0a; border-color: #f87171; }
+
+  .meta { font-size: 0.7rem; color: #475569; margin-top: 8px; }
+
+  .toast {
+    position: fixed; bottom: 20px; right: 20px;
+    background: #1e293b; border: 1px solid #334155; color: #a5b4fc;
+    padding: 8px 14px; border-radius: 8px; font-size: 0.8rem;
+    opacity: 0; transition: opacity 0.3s; pointer-events: none;
+  }
+  .toast.show { opacity: 1; }
+</style>
+</head>
+<body>
+
+<div class="sidebar">
+  <div class="sidebar-header">
+    <h1>📝 Notes</h1>
+    <p>AI-managed · auto-refreshes</p>
+  </div>
+  <div class="search-box">
+    <input id="search" type="text" placeholder="Search…" oninput="handleSearch()" />
+  </div>
+  <div id="noteList" class="note-list"></div>
+  <button class="add-btn" onclick="newNote()">+ New Note</button>
+</div>
+
+<div class="main" id="main">
+  <div class="placeholder">
+    <div class="icon">📄</div>
+    <p>Select a note or create a new one</p>
+  </div>
+</div>
+
+<div id="toast" class="toast"></div>
+
+<script>
+  let notes = [];
+  let currentId = null;
+  let searchTerm = '';
+
+  // ── LAVS bridge ─────────────────────────────────────────────────────────
+  function lavs(endpoint, params) {
+    return new Promise((resolve, reject) => {
+      const id = Math.random().toString(36).slice(2);
+      function handler(e) {
+        if (!e.data || e.data.id !== id) return;
+        window.removeEventListener('message', handler);
+        if (e.data.type === 'lavs-result') resolve(e.data.result);
+        else reject(new Error(e.data.error || 'lavs error'));
+      }
+      window.addEventListener('message', handler);
+      window.parent.postMessage({ type: 'lavs-call', id, endpoint, params }, '*');
+      setTimeout(() => { window.removeEventListener('message', handler); reject(new Error('timeout')); }, 10000);
+    });
+  }
+
+  // SSE refresh from agent
+  window.addEventListener('message', (e) => {
+    if (e.data && e.data.type === 'lavs-agent-action') {
+      loadNotes(false);
+      showToast('Updated by agent');
+    }
+  });
+
+  // ── Helpers ──────────────────────────────────────────────────────────────
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 2500);
+  }
+
+  function escHtml(s) {
+    return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }
+
+  function fmt(iso) {
+    if (!iso) return '';
+    return new Date(iso).toLocaleString();
+  }
+
+  // ── Render ───────────────────────────────────────────────────────────────
+  function renderList() {
+    const q = searchTerm.toLowerCase();
+    const visible = q
+      ? notes.filter(n => n.title.toLowerCase().includes(q) || n.content.toLowerCase().includes(q))
+      : notes;
+    const el = document.getElementById('noteList');
+    if (!visible.length) {
+      el.innerHTML = `<div style="padding:20px;color:#475569;font-size:0.8rem;text-align:center">${q?'No matches':'No notes yet'}</div>`;
+      return;
+    }
+    el.innerHTML = visible.map(n => `
+      <div class="note-item${n.id===currentId?' active':''}" onclick="selectNote('${n.id}')">
+        <div class="title">${escHtml(n.title)}</div>
+        <div class="preview">${escHtml((n.content||'').split('\n')[0])}</div>
+        ${n.tags&&n.tags.length?`<div class="tags">${n.tags.map(t=>`<span class="tag">${escHtml(t)}</span>`).join('')}</div>`:''}
+      </div>`).join('');
+  }
+
+  function renderEditor(note) {
+    const main = document.getElementById('main');
+    main.innerHTML = `
+      <div class="editor-header">
+        <input id="editTitle" type="text" value="${escHtml(note.title)}" placeholder="Title…" />
+        <div class="tags-input" id="tagsRow">
+          ${(note.tags||[]).map((t,i)=>`<span class="tag" onclick="removeTag(${i})" title="click to remove">${escHtml(t)}</span>`).join('')}
+          <input id="tagInput" type="text" placeholder="Add tag…" onkeydown="handleTagKey(event)" />
+        </div>
+        <div class="meta">Created ${fmt(note.createdAt)}${note.updatedAt?` · Updated ${fmt(note.updatedAt)}`:''}</div>
+      </div>
+      <div class="editor-body">
+        <textarea id="editContent" placeholder="Write your note…">${escHtml(note.content||'')}</textarea>
+      </div>
+      <div class="editor-actions">
+        <button class="danger" onclick="deleteNote('${note.id}')">Delete</button>
+        <button onclick="saveNote('${note.id}')">Save</button>
+      </div>`;
+
+    // Track tags locally
+    window._editTags = [...(note.tags || [])];
+  }
+
+  function removeTag(idx) {
+    window._editTags.splice(idx, 1);
+    // Re-render tags inline
+    const row = document.getElementById('tagsRow');
+    const inp = document.getElementById('tagInput');
+    const rendered = window._editTags.map((t,i)=>`<span class="tag" onclick="removeTag(${i})" title="click to remove">${escHtml(t)}</span>`).join('');
+    row.innerHTML = rendered;
+    row.appendChild(inp);
+    inp.focus();
+  }
+
+  function handleTagKey(e) {
+    if (e.key === 'Enter' || e.key === ',') {
+      e.preventDefault();
+      const val = e.target.value.trim().replace(/,/g,'');
+      if (val && !window._editTags.includes(val)) {
+        window._editTags.push(val);
+        e.target.value = '';
+        const row = document.getElementById('tagsRow');
+        const rendered = window._editTags.map((t,i)=>`<span class="tag" onclick="removeTag(${i})" title="click to remove">${escHtml(t)}</span>`).join('');
+        row.innerHTML = rendered;
+        row.appendChild(e.target);
+        e.target.focus();
+      }
+    }
+  }
+
+  // ── Data ops ─────────────────────────────────────────────────────────────
+  async function loadNotes(resetSelection = true) {
+    try {
+      notes = await lavs('listNotes', searchTerm ? { search: searchTerm } : {});
+      renderList();
+      if (resetSelection && notes.length) selectNote(notes[0].id);
+      else if (currentId) {
+        const n = notes.find(n => n.id === currentId);
+        if (n) renderEditor(n);
+      }
+    } catch (e) {
+      document.getElementById('noteList').innerHTML = `<div style="padding:16px;color:#f87171;font-size:0.8rem">Error: ${e.message}</div>`;
+    }
+  }
+
+  async function selectNote(id) {
+    currentId = id;
+    renderList();
+    try {
+      const note = await lavs('getNote', { id });
+      renderEditor(note);
+    } catch (e) {
+      showToast('Error loading note: ' + e.message);
+    }
+  }
+
+  function newNote() {
+    const main = document.getElementById('main');
+    currentId = null;
+    renderList();
+    main.innerHTML = `
+      <div class="editor-header">
+        <input id="editTitle" type="text" placeholder="Title…" />
+        <div class="tags-input" id="tagsRow">
+          <input id="tagInput" type="text" placeholder="Add tag…" onkeydown="handleTagKey(event)" />
+        </div>
+      </div>
+      <div class="editor-body">
+        <textarea id="editContent" placeholder="Write your note…"></textarea>
+      </div>
+      <div class="editor-actions">
+        <button onclick="createNote()">Save</button>
+      </div>`;
+    window._editTags = [];
+    document.getElementById('editTitle').focus();
+  }
+
+  async function createNote() {
+    const title = document.getElementById('editTitle').value.trim();
+    const content = document.getElementById('editContent').value;
+    if (!title) { showToast('Title is required'); return; }
+    try {
+      const note = await lavs('addNote', { title, content, tags: window._editTags || [] });
+      notes.unshift(note);
+      currentId = note.id;
+      renderList();
+      renderEditor(note);
+      showToast('Note saved');
+    } catch (e) { showToast('Error: ' + e.message); }
+  }
+
+  async function saveNote(id) {
+    const title = document.getElementById('editTitle').value.trim();
+    const content = document.getElementById('editContent').value;
+    if (!title) { showToast('Title is required'); return; }
+    try {
+      const note = await lavs('updateNote', { id, title, content, tags: window._editTags || [] });
+      const idx = notes.findIndex(n => n.id === id);
+      if (idx !== -1) notes[idx] = note;
+      renderList();
+      renderEditor(note);
+      showToast('Saved');
+    } catch (e) { showToast('Error: ' + e.message); }
+  }
+
+  async function deleteNote(id) {
+    if (!confirm('Delete this note?')) return;
+    try {
+      await lavs('deleteNote', { id });
+      notes = notes.filter(n => n.id !== id);
+      currentId = null;
+      renderList();
+      document.getElementById('main').innerHTML = `<div class="placeholder"><div class="icon">📄</div><p>Select a note or create a new one</p></div>`;
+      showToast('Deleted');
+    } catch (e) { showToast('Error: ' + e.message); }
+  }
+
+  function handleSearch() {
+    searchTerm = document.getElementById('search').value;
+    loadNotes(false);
+  }
+
+  loadNotes();
+</script>
+</body>
+</html>

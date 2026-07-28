@@ -1,0 +1,153 @@
+{
+  "lavs": "1.0",
+  "name": "notes",
+  "contentType": "lavs/notes",
+  "version": "1.0.0",
+  "description": "Quick notes and journal for AI agent sessions",
+  "permissions": {
+    "fileAccess": ["./data/**/*.json"]
+  },
+  "endpoints": [
+    {
+      "id": "listNotes",
+      "method": "query",
+      "description": "List all notes, newest first. Supports optional full-text search and tag filtering.",
+      "handler": {
+        "type": "script",
+        "command": "node",
+        "args": ["scripts/list.js"],
+        "input": "stdin"
+      },
+      "schema": {
+        "input": {
+          "type": "object",
+          "properties": {
+            "search": { "type": "string", "description": "Full-text search term" },
+            "tag":    { "type": "string", "description": "Filter by tag" }
+          }
+        },
+        "output": {
+          "type": "array",
+          "items": { "$ref": "#/types/Note" }
+        }
+      }
+    },
+    {
+      "id": "getNote",
+      "method": "query",
+      "description": "Get a single note by ID",
+      "handler": {
+        "type": "script",
+        "command": "node",
+        "args": ["scripts/get.js"],
+        "input": "stdin"
+      },
+      "schema": {
+        "input": {
+          "type": "object",
+          "required": ["id"],
+          "properties": {
+            "id": { "type": "string", "description": "Note ID" }
+          }
+        },
+        "output": { "$ref": "#/types/Note" }
+      }
+    },
+    {
+      "id": "addNote",
+      "method": "mutation",
+      "description": "Add a new note with optional tags",
+      "handler": {
+        "type": "script",
+        "command": "node",
+        "args": ["scripts/add.js"],
+        "input": "stdin"
+      },
+      "schema": {
+        "input": {
+          "type": "object",
+          "required": ["title", "content"],
+          "properties": {
+            "title":   { "type": "string", "description": "Note title" },
+            "content": { "type": "string", "description": "Markdown content" },
+            "tags":    {
+              "type": "array",
+              "items": { "type": "string" },
+              "description": "Optional tags"
+            }
+          }
+        },
+        "output": { "$ref": "#/types/Note" }
+      }
+    },
+    {
+      "id": "updateNote",
+      "method": "mutation",
+      "description": "Update an existing note's title, content or tags",
+      "handler": {
+        "type": "script",
+        "command": "node",
+        "args": ["scripts/update.js"],
+        "input": "stdin"
+      },
+      "schema": {
+        "input": {
+          "type": "object",
+          "required": ["id"],
+          "properties": {
+            "id":      { "type": "string" },
+            "title":   { "type": "string" },
+            "content": { "type": "string" },
+            "tags":    { "type": "array", "items": { "type": "string" } }
+          }
+        },
+        "output": { "$ref": "#/types/Note" }
+      }
+    },
+    {
+      "id": "deleteNote",
+      "method": "mutation",
+      "description": "Delete a note",
+      "handler": {
+        "type": "script",
+        "command": "node",
+        "args": ["scripts/delete.js"],
+        "input": "stdin"
+      },
+      "schema": {
+        "input": {
+          "type": "object",
+          "required": ["id"],
+          "properties": {
+            "id": { "type": "string", "description": "Note ID" }
+          }
+        },
+        "output": {
+          "type": "object",
+          "properties": { "success": { "type": "boolean" } }
+        }
+      }
+    }
+  ],
+  "view": {
+    "component": {
+      "type": "local",
+      "path": "./view/index.html"
+    },
+    "fallback": "table"
+  },
+  "types": {
+    "Note": {
+      "type": "object",
+      "required": ["id", "title", "content", "createdAt"],
+      "properties": {
+        "id":        { "type": "string" },
+        "title":     { "type": "string" },
+        "content":   { "type": "string" },
+        "tags":      { "type": "array", "items": { "type": "string" } },
+        "createdAt": { "type": "string" },
+        "updatedAt": { "type": "string" }
+      }
+    }
+  }
+}

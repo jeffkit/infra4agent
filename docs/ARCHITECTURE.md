@@ -1,6 +1,6 @@
 # infra4agent 架构文档
 
-> 最后更新：2026-07-20  
+> 最后更新：2026-07-27（MCP outbound + Transport::send_media 已落地）  
 > 维护者：jeffkit  
 > 配置源：根目录 `mona.yaml`（子仓清单以该文件为准）
 
@@ -96,9 +96,9 @@ flowchart TB
 1. **agentproc 是横切共享协议**：通道、编排、协同多条链路在进程边界上汇聚到它（stdin turn / stdout NDJSON）。
 2. **flowcast 与 plaita 是并行编排栈**：产品叙事接近，本大仓内**无互依赖**。
 3. **通道三件套**（微信 hub / HITL / 邮件）入口不同，常接到 AgentProc 或 iLink。
-4. **lavs** 与 **web-bridge** 同属「Agent ↔ UI」叙事但路径不同：lavs 是结构化 View 协议（宿主多为仓外 AgentStudio）；web-bridge 是注入式 DOM/a11y 操控（Electron/Tauri console），本大仓内暂无兄弟硬依赖。
+4. **lavs** 与 **web-bridge** 同属「Agent ↔ UI」叙事但路径不同：lavs 是结构化 View 协议（CLI-first + 独立轻量 Host，v1.1 起以 content-type 为主抽象，支持 pinned/dispatch 双宿主模式）；web-bridge 是注入式 DOM/a11y 操控（Electron/Tauri console），本大仓内暂无兄弟硬依赖。
 5. **argusai** 横切做 E2E；**marketplace** 只做 Claude Code 侧分发。
-6. **im-agentproc 是 agentproc-native 的 IM 桥接运行时**：从 ilink-hub 的 `src/bridge` 抽离，作为虚拟 token 后端连 Hub，把入站 IM 消息路由到 agentproc profile（P0 exec）；未来经 `Transport` trait 扩展飞书/Telegram。
+6. **im-agentproc 是 agentproc-native 的 IM 桥接运行时**：从 ilink-hub 的 `src/bridge` 抽离，作为虚拟 token 后端连 Hub，把入站 IM 消息路由到 agentproc profile（P0 exec）；当前经 `Transport` trait 已接入 iLink/微信、Telegram、WeCom（智能机器人 WebSocket）、飞书（WebSocket）、Discord（Gateway WebSocket）。Agent 出站投递（文本 + 媒体）通过 im-agentproc 内置的 MCP server（`send_text` / `send_image` / `send_file` / `send_voice`），hub profile 进程通过标准 `mcp_servers` 块连入。
 
 ---
 
@@ -108,13 +108,13 @@ flowchart TB
 |------|------|------------|--------|
 | `agentproc` | AgentProc | 桥接消息平台与 Agent CLI 的最小进程协议 + SDK + Profile Hub | 共享协议 |
 | `ilink-hub` | iLink Hub | 微信 ClawBot iLink 多路复用与 Bridge | 通道（微信） |
-| `im-agentproc` | IM-AgentProc | 从 ilink-hub 抽离的 IM→AgentProc 桥接运行时（iLink/微信 → agentproc profile） | 通道（IM 桥接） |
+| `im-agentproc` | IM-AgentProc | 从 ilink-hub 抽离的 IM→AgentProc 桥接运行时（iLink/微信、Telegram、WeCom、飞书、Discord → agentproc profile） | 通道（IM 桥接） |
 | `hil-mcp` | hitl-mcp | 关键操作前经微信/企微向人确认的 HITL MCP | 通道（人机确认） |
 | `agently-mail-client` | Agently Mail | 邮箱 → AgentProc → 自动回复 | 通道（邮件） |
 | `recursive` | Recursive | Rust ReAct 编码 Agent（HTTP/MCP/TUI/微信） | Agent 运行时 |
 | `flowcast` | Flowcast | Node workflow：断点续跑、HITL、多 CLI、L3 codegen（曾用名 flowx） | 编排（Agent/CLI 向） |
 | `plaita` | Plaita | Python 逻辑编排运行时（JSON/@flow；曾用路径 loki/pyloki） | 编排（流程引擎向） |
-| `lavs` | LAVS | Agent 结构化 UI 协议与 TS/Py SDK | Agent 视图 |
+| `lavs` | LAVS | CLI-first 结构化 View 协议：content-type 为主抽象，view bundle 可跨 Agent 复用，配独立轻量 Host 渲染；含 TS/Py SDK | Agent 视图 |
 | `web-bridge` | web-bridge | 注入式 DOM/a11y 桥：MCP/CLI 操控桌面 WebView 页面 | 页面操控 |
 | `argusai` | ArgusAI | YAML 驱动 Docker E2E + `argusai-mcp` | 测试 |
 | `argusai-marketplace` | ArgusAI Marketplace | Claude Code Plugin，拉起 `argusai-mcp` | 测试分发 |
@@ -234,8 +234,8 @@ flowchart LR
 5. **E2E 验收**  
    业务仓或 recursive e2e → `argusai`（YAML + Docker）；Claude 侧可经 marketplace 装插件。
 
-6. **可视化 Agent 面**  
-   Agent 暴露 LAVS manifest →（仓外）AgentStudio / 前端渲染。
+6. **可视化 Agent 面（CLI-first 模式）**  
+   Agent 目录有 `lavs.json` → `lavs discover` 列出可用 bundle → `lavs view [contentType]` 启动本地 Host + 浏览器 tab → Agent 通过 `lavs call <endpoint>` 操作数据 → View 通过 SSE 自动刷新。亦可配合 AgentStudio 等支持 LAVS 的宿主（pinned / dispatch 模式）。
 
 7. **操控桌面应用 WebView**  
    `web-bridge serve` → 粘贴 inject.js 到 Electron/Tauri DevTools → Agent 经 MCP/CLI 定位与点击输入。
@@ -267,7 +267,7 @@ flowchart LR
 5. **agentproc 版本分裂**（如 flowcast 与 mail-client 锁定版本差较大）的兼容边界。
 6. **recursive e2e 的 `file:…/infra4agent/argusai`** 依赖大仓相对布局，单独 clone 可能失效。
 7. **plaita 与 flowcast 是否计划互通**——当前是缺口，不是隐藏依赖。
-8. **web-bridge 与 lavs** 是否在产品上会统一「Agent 看见/操控 UI」叙事——当前实现独立。
+8. **web-bridge 与 lavs** 叙事已明确分工：lavs 主张「Agent 产生结构化数据 → 渲染对应 view bundle」；web-bridge 主张「Agent 注入操控现有 Web 页面 DOM」。两者互补，不合并。lavs v1.1 新增 dispatch 模式（按 content-type 分发）和独立轻量 Host（`lavs view` 命令），不再依赖 AgentStudio 作唯一宿主。
 9. **ilink-hub 的 `ilink-hub-bridge` 与新建 `im-agentproc` 的关系**——后者从前者 `src/bridge` 抽离，是 agentproc-native 的 IM→本地 CLI 桥接运行时（跑 agentproc profile，遵循 P0 exec）；前者仍保留通用 YAML 驱动的本地 CLI 后端。需确认哪边为 IM→AgentProc 的正式入口（提案 `bridge-as-multi-im-runtime` 指向 im-agentproc 为后继）。
 
 ---

@@ -1,0 +1,147 @@
+{
+  "lavs": "1.0",
+  "name": "todo-list",
+  "contentType": "lavs/todo-list",
+  "version": "1.0.0",
+  "description": "Simple task list for tracking work items",
+  "permissions": {
+    "fileAccess": ["./data/**/*.json"]
+  },
+  "endpoints": [
+    {
+      "id": "listTodos",
+      "method": "query",
+      "description": "List all todos (optionally filter: all | active | done)",
+      "handler": {
+        "type": "script",
+        "command": "node",
+        "args": ["scripts/list.js"],
+        "input": "stdin"
+      },
+      "schema": {
+        "input": {
+          "type": "object",
+          "properties": {
+            "filter": {
+              "type": "string",
+              "enum": ["all", "active", "done"],
+              "description": "Filter todos by status"
+            }
+          }
+        },
+        "output": {
+          "type": "array",
+          "items": { "$ref": "#/types/Todo" }
+        }
+      }
+    },
+    {
+      "id": "addTodo",
+      "method": "mutation",
+      "description": "Add a new todo item",
+      "handler": {
+        "type": "script",
+        "command": "node",
+        "args": ["scripts/add.js"],
+        "input": "stdin"
+      },
+      "schema": {
+        "input": {
+          "type": "object",
+          "required": ["text"],
+          "properties": {
+            "text": { "type": "string", "description": "Todo text" },
+            "priority": {
+              "type": "string",
+              "enum": ["low", "medium", "high"],
+              "description": "Priority level"
+            }
+          }
+        },
+        "output": { "$ref": "#/types/Todo" }
+      }
+    },
+    {
+      "id": "toggleTodo",
+      "method": "mutation",
+      "description": "Toggle a todo item's done status",
+      "handler": {
+        "type": "script",
+        "command": "node",
+        "args": ["scripts/toggle.js"],
+        "input": "stdin"
+      },
+      "schema": {
+        "input": {
+          "type": "object",
+          "required": ["id"],
+          "properties": {
+            "id": { "type": "string", "description": "Todo ID" }
+          }
+        },
+        "output": { "$ref": "#/types/Todo" }
+      }
+    },
+    {
+      "id": "deleteTodo",
+      "method": "mutation",
+      "description": "Delete a todo item",
+      "handler": {
+        "type": "script",
+        "command": "node",
+        "args": ["scripts/delete.js"],
+        "input": "stdin"
+      },
+      "schema": {
+        "input": {
+          "type": "object",
+          "required": ["id"],
+          "properties": {
+            "id": { "type": "string", "description": "Todo ID to delete" }
+          }
+        },
+        "output": {
+          "type": "object",
+          "properties": { "success": { "type": "boolean" } }
+        }
+      }
+    },
+    {
+      "id": "clearDone",
+      "method": "mutation",
+      "description": "Clear all completed todo items",
+      "handler": {
+        "type": "script",
+        "command": "node",
+        "args": ["scripts/clear-done.js"]
+      },
+      "schema": {
+        "input": { "type": "object", "properties": {} },
+        "output": {
+          "type": "object",
+          "properties": { "removed": { "type": "number" } }
+        }
+      }
+    }
+  ],
+  "view": {
+    "component": {
+      "type": "local",
+      "path": "./view/index.html"
+    },
+    "fallback": "table"
+  },
+  "types": {
+    "Todo": {
+      "type": "object",
+      "required": ["id", "text", "done", "createdAt"],
+      "properties": {
+        "id":        { "type": "string" },
+        "text":      { "type": "string" },
+        "done":      { "type": "boolean" },
+        "priority":  { "type": "string", "enum": ["low", "medium", "high"] },
+        "createdAt": { "type": "string" }
+      }
+    }
+  }
+}
