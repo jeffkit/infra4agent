@@ -1,6 +1,6 @@
 # infra4agent 架构文档
 
-> 最后更新：2026-07-27（MCP outbound + Transport::send_media 已落地）  
+> 最后更新：2026-07-28（hil-mcp 接入 Telegram / Discord / 飞书三渠道）  
 > 维护者：jeffkit  
 > 配置源：根目录 `mona.yaml`（子仓清单以该文件为准）
 
@@ -210,7 +210,7 @@ flowchart LR
 |------|------|--------|
 | 微信多路 | ilink-hub | iLink + AgentProc Bridge |
 | IM→AgentProc 桥接 | im-agentproc | agentproc profile（P0 exec）；连 iLink Hub 作虚拟 token 后端 |
-| 人确认 | hil-mcp | 微信 ClawBot / 企微 AI Bot（MCP） |
+| 人确认 | hil-mcp | 微信 iLink / 企微 AI Bot / Telegram / Discord / 飞书（MCP） |
 | 邮件 | agently-mail-client | AgentProc |
 
 不要假设「开了微信就自动有 HITL」或「邮件走 hub」——配置上各自独立，产品上可组合。
