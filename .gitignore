@@ -25,3 +25,7 @@ bundles/*/data/*.json
 .onboarding/
 .cursor/
 .workbuddy/
+
+# ZCode 本地 session 临时文件（skill 等团队共享资源仍入库，见下）
+.zcode/plans/
+.zcode/sessions/
