@@ -65,10 +65,16 @@ infra4agent/
 ├── mona.yaml              # 逻辑大仓配置（子仓清单）
 ├── .gitignore             # 排除本地 clone 的子仓目录
 ├── AGENTS.md              # AI 助手导航入口
+├── CLAUDE.md              # → AGENTS.md（软链，兼容 Claude Code）
 ├── README.md              # 本文件
+├── .zcode/skills/         # 跨仓共享的 ZCode skill（软链入 recursive）
+├── bundles/               # LAVS view bundle（todo-list / notes，见 LAVS_AGENT_SOP）
 └── docs/
-    ├── ARCHITECTURE.md    # 分层架构与依赖
-    └── DOC_CODE_MAP.md    # 文档 ↔ 配置映射
+    ├── ARCHITECTURE.md            # 分层架构与依赖
+    ├── DOC_CODE_MAP.md            # 文档 ↔ 配置映射
+    ├── LAVS_AGENT_SOP.md          # LAVS View 标准操作流程
+    ├── docker-build-speedup.md    # 通用 Docker 构建提速指南
+    └── self-improve-review-prompt.md  # self-improve 周期审查使用指南
 ```
 
 clone 之后本地还会出现各子仓目录（已被 gitignore，不提交到本仓）。

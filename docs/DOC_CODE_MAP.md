@@ -1,6 +1,6 @@
 # 文档 ↔ 代码映射
 
-> 最后更新：2026-07-20
+> 最后更新：2026-08-03
 
 大仓根只管理配置与导航文档；子仓源码在各自 git 仓库中（见 `.gitignore`）。
 
@@ -14,4 +14,6 @@
 | 各子仓 `AGENTS.md` | 对应子仓源码树 | 仓内导航；不在大仓 git 追踪范围内 |
 | `lavs/docs/DISPATCH-PROTOCOL.md` | `lavs/schema/lavs-manifest.schema.json`, `lavs/sdk/typescript/runtime/src/{loader,tool-generator,subscription-manager}.ts` | LAVS View 分发协议设计草案：以 content-type 为主抽象、pinned/dispatch 两种宿主模式、多 view 调度；草案，尚未落入 SPEC |
 | `mona.yaml` | `im-agentproc/` | 新增子仓：从 ilink-hub 抽离的 IM→AgentProc 桥接运行时（Rust crate，依赖 agentproc SDK）；清单见 `mona.yaml`，本地 clone 经 `.gitignore` 排除 |
-| `docs/LAVS_AGENT_SOP.md` | `bundles/*/lavs.json`, `lavs/sdk/typescript/runtime/src/{mcp-server,tool-generator,cli}.ts` | Agent 使用 LAVS 的标准操作流程：何时用 LAVS、如何用 lavs_discover + lavs_call、Daemon 管理；束缚于 lavs-runtime v0.2+ |
+| `docs/LAVS_AGENT_SOP.md` | `bundles/*/lavs.json`, `lavs/sdk/typescript/runtime/src/{mcp-server,tool-generator,cli}.ts` | Agent 使用 LAVS 的标准操作流程：何时用 LAVS、如何用 lavs_call、Daemon 管理；束缚于 lavs-runtime v0.2+ |
+| `docs/docker-build-speedup.md` | `recursive/docs/e2e-docker-build-speedup.md`（实战记录） | 语言无关的 Docker 构建提速方法论：依赖层分离、diff-scope 短路、跨 worktree 缓存共享；提炼自 recursive 实战，各语言（Rust/Go/Node/Python/Java）模板 |
+| `docs/self-improve-review-prompt.md` | `.zcode/skills/self-improve-{cycle,supervise}`（symlink → `recursive/.zcode/skills/`） | self-improve 周期审查使用指南：触发方式（`/self-improve-cycle` skill / 定时 cron）、深度模式、并发规则、经验沉淀机制；历史战绩见文末 |

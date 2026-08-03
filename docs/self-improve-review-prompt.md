@@ -85,7 +85,7 @@ skill 内部有完整的并发决策树，会自动判断哪些 goal 可以并�
 | [`self-improve-supervise`](https://github.com/jeffkit/recursive/blob/main/.zcode/skills/self-improve-supervise/SKILL.md) | 单个 goal 的端到端监督（launch → poll → verdict → rescue） | "跑这个 goal" |
 | [`self-improve-cycle`](https://github.com/jeffkit/recursive/blob/main/.zcode/skills/self-improve-cycle/SKILL.md) | 完整周期（review → 多 goal 迭代 → 沉淀） | "找问题跑自迭代" / `/self-improve-cycle` |
 
-cycle 加载 supervise，supervise 承载 18 条已沉淀的 Discipline 教训。
+cycle 加载 supervise，supervise 承载 22 条已沉淀的 Discipline 教训。
 
 ---
 
