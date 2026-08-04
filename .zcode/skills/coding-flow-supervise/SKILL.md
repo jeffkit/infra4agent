@@ -358,7 +358,23 @@ for i in $(seq 1 80); do
 done
 
 # ── resume after crash/intervention (completed sprints skipped) ──
-node "$PGE" --run-id "$RID" --repo "$REPO" --goal "..." --agent claude
+node "$PGE" --run-id "$RID" --repo "$REPO" --goal "..." --agent minimax
+
+# ── preserve/rescue（失败 run 的现场恢复）──
+# 失败的 run 会自动 preserve：WIP commit + refs/preserve/<RID> + preserved.diff
+# 查看 preserve 现场：
+cat "$REPO/.flowcast/runs/$RID/preserved.diff"
+cat "$REPO/.flowcast/runs/$RID/failure.log"
+# land preserve（跑门验证后 land 到 main）：
+node "$PGE" --land-preserve "$RID" --repo "$REPO"
+# 清理 preserve：
+node "$PGE" --prune-preserve "$RID" --repo "$REPO"
+
+# ── cross-provider review（sprint 通过后、commit 前的二次审查）──
+# 默认用 evaluator profile 做 review；用不同 provider 防自评放水：
+node "$PGE" --repo "$REPO" --goal "..." --agent minimax --reviewer-agent deepseek
+# 跳过 review（门+evaluator 已过就够）：
+node "$PGE" --repo "$REPO" --goal "..." --agent minimax --no-review
 
 # ── verify product ──
 git -C "$REPO" log --oneline -5
