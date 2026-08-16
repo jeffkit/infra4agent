@@ -29,3 +29,8 @@ bundles/*/data/*.json
 # ZCode 本地 session 临时文件（skill 等团队共享资源仍入库，见下）
 .zcode/plans/
 .zcode/sessions/
+
+# 子仓（mona.yaml 管理，本地 clone 不追踪）
+deepseek-harness/
+/mediaflow/
+/plaita-nodes/

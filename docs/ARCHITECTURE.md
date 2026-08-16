@@ -119,6 +119,7 @@ flowchart TB
 | `argusai` | ArgusAI | YAML 驱动 Docker E2E + `argusai-mcp` | 测试 |
 | `argusai-marketplace` | ArgusAI Marketplace | Claude Code Plugin，拉起 `argusai-mcp` | 测试分发 |
 | `issue-keeper` | Issue Keeper | 监控 issue → screener → agentproc → 写回评论 | 协同工具 |
+| `deepseek-harness` | DeepSeek Harness (fork) | DeepSeek Harness 的 fork：agent 运行时（LAVS 宿主适配、Tasks tab、headless --resume、preset-scoped bundle） | Agent 运行时 |
 
 ---
 
