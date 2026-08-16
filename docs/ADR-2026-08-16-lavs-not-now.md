@@ -8,20 +8,26 @@
 
 **暂不整合。** 不做 LAVS host bundle、不在 dsh web 挂 view bundle。
 
-## 理由（按重要性）
+## 2026-08-16 二次修正（推翻初版事实基础）
 
-1. **场景错配（主因）**：dsh web 是会话转录（chat transcript），呈现层已被
-   render-intent 词汇（Generic/Terminal/Diff 卡片）+ `schema-form` 覆盖；chat 的
-   交互原语是对话（"把第三个 todo 勾掉"→ agent 用工具执行），不是 UI 回调。
-   LAVS 的差异化恰是双向服务界面（query/mutation/subscription）——那是 dashboard
-   场景（AgentStudio 的定位），不是 chat 场景。turn 内要的是单次呈现，LAVS 卖
-   的是持续服务界面。
-2. **成熟度未过线**：自标 pre-release；v1.1 刚完成重定位（manifest 绑定从 agent
-   改为 content-type，架构仍在动）；官方 bundle 4 个、社区 0；宿主仅仓外
-   AgentStudio。（与 web-bridge 暂缓同一标准。）
-3. **接缝可行但不便宜**：dsh 的 client module 系统（浏览器侧 Loader /
-   `dsh.client` / HMR）技术上可承载 view bundle，但 query/mutation/subscription
-   桥接回 agent 侧需要双向通道工程，投入大而场景收益小。
+初版理由之一"dsh web 只有 chat、无面板形态"经实证**错误**：dsh web 是产品化
+多视图工作台——侧栏+工作区（ui-sidebar/ui-workspace）、文件 read/diff 卡片、
+Trajectory 事件台账+时间线（独立 tab）、workflow-run 三层可视化（ui-workflow-run
+作为 ConversationNodeDefinition 渲染进 conversation.chat.node 插槽的活例）、
+plan/subagent/jobs 面板，共 44 个 client 包。修正后的判断：
+
+1. **交互哲学错配（仍成立，换依据）**：dsh 的面板哲学是"durable session facts
+   的只读投影 + 导航进会话"，交互原语是对话；LAVS 的差异化（mutation/
+   subscription 双向）在 chat 哲学下不是空白，是设计选择。
+2. **成熟度未过线（不变）**：LAVS pre-release、v1.1 刚重定位、官方 bundle 4、
+   社区 0、宿主仅 AgentStudio。
+3. **接缝成本大幅下修**：dsh 的 ui-slots 插槽系统 + client module 系统（`dsh.client`
+   包、无需 fork 上游）对第三方 UI 插件正式开放——LAVS dispatch 的**只读半边**
+   （按 content-type 渲染 artifact 节点）接入是"一个 client 插件"的量级；重的
+   只是双向半边，而那半边本就错配。
+4. **新增：借鉴方向反转**——dsh 的插槽体系（occupancy/holes/插槽环/节点定义）
+   比 LAVS host 侧成熟一个量级，LAVS 的 host 实现可参考 ui-slots 设计。同
+   workflow 评估的结论结构：借思想优于接协议。
 
 ## 正面观察（零成本保留）
 
@@ -30,9 +36,9 @@
 - 零成本借鉴点：dsh render-intent 若被真实场景逼着扩展（如 table 卡片），LAVS
   data-table 的"列 schema 由 agent 推导"可直接参考——借思想，不接协议。
 
-## 重新触发条件
+## 重新触发条件（修正后）
 
-1. dsh web 出现"会话旁挂面板"产品形态（dashboard 视图）——LAVS dispatch 模式
-   才有真场景
-2. LAVS 发布稳定版且出现第二个宿主
-3. dsh render-intent 词汇被真实场景逼着扩展（届时参考其 bundle 设计而非接入协议）
+1. LAVS 出稳定版 → 可低成本试做"只读 dispatch 半边"的 dsh client 插件
+   （ui-slots + ConversationNodeDefinition 路径，不需要上游开门）
+2. dsh 出现"UI 反向操作数据"的真实产品诉求（届时双向半边才有一搏）
+3. 反向借鉴触发：LAVS host 实现重构时参考 ui-slots 的 occupancy/holes 设计
