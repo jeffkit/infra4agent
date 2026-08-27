@@ -12,6 +12,9 @@
 /issue-keeper/
 /web-bridge/
 /im-agentproc/
+/mediaflow/
+/deepseek-harness/
+/plaita-nodes/
 
 # monarbor 本地覆盖
 mona.local.yaml
@@ -25,6 +28,7 @@ bundles/*/data/*.json
 .onboarding/
 .cursor/
 .workbuddy/
+<<<<<<< HEAD
 
 # ZCode 本地 session 临时文件（skill 等团队共享资源仍入库，见下）
 .zcode/plans/
@@ -34,3 +38,5 @@ bundles/*/data/*.json
 deepseek-harness/
 /mediaflow/
 /plaita-nodes/
+=======
+>>>>>>> 3cd6d45 (feat(ADR): 编排双轨收敛 plaita+agentproc——试点通过，登记 plaita-nodes 子仓)

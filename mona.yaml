@@ -196,13 +196,29 @@ repos:
   name: MediaFlow
   repo_url: git@github.com:jeffkit/mediaflow.git
   description: KONG 全自动化自媒体运营系统：Flowcast 编排创意→文案→配图/视频→审核→多平台发布。公众号走官方 API 全自动、小红书走
-    browser-use 半自动、视频走 MiniMax。依赖 flowcast/hil-mcp。
+    browser-use 半自动、视频走 MiniMax。依赖 flowcast/hil-mcp。试点迁移 plaita（ADR-2026-08-27）。
   tech_stack:
   - Node.js
   - Flowcast
   - WeChat-API
   - browser-use
   - MiniMax
+  - plaita
+  branches:
+    dev: main
+    test: main
+    prod: main
+- path: plaita-nodes
+  name: plaita-nodes
+  repo_url: git@github.com:jeffkit/plaita-nodes.git
+  description: plaita 通用节点集（infra 级）：AgentRun（经 agentproc 调 Agent CLI，复用 flowcast 的
+    agents/providers 配置）、Capture、Hitl（直连 hitl-server 微信通道）、Notify、WriteFile。ADR-2026-08-27
+    编排收敛决议的节点承载层，业务粘接节点不放本仓。
+  tech_stack:
+  - Python
+  - plaita
+  - agentproc
+  - Node Registry
   branches:
     dev: main
     test: main
