@@ -115,3 +115,22 @@ redis/db/perf 环境性失败）。
 
 遗留（phase 2）：plaita-console 起服务做可视化验收（含流程发布/版本管理）；HitlNode
 挂起版（崩溃级恢复）与 poller 服务；GitHub 建仓推送 plaita-nodes。
+
+## Phase 2（2026-08-27 启动，部分完成）
+
+1. **plaita-nodes 已建仓推送**（github.com/jeffkit/plaita-nodes，private）；mediaflow /
+   plaita / infra4agent 同日提交全部推送同步。
+2. **环境性单测重构（plaita）**：14 个"失败"均为单测依赖可选 extras（fakeredis[lua] 的
+   EVAL / sqlalchemy / RestrictedPython / redis+cachetools）而环境未装齐。两层修复：
+   六个测试模块加 `pytest.importorskip`（缺包 SKIP 而非 FAIL）；`[dev]` extra 集齐单测
+   依赖（`.[dev]` 即全量执行，原需 `[dev,lint,all]`）。装齐后 unit 3266 passed 零失败。
+3. **HitlAwaitNode 挂起版 + poller（plaita-nodes）**：`hitl_await` 节点
+   （is_suspending，execute 发消息拿 session 即挂起，内核快照 context——微信确认等待
+   期间进程可崩溃重启）；`hitl_poller` 轮询 hitl-server 向 EventBus 发布 hitl_reply。
+   Distributed 闭环测试通过：挂起 → context 落盘 → 新执行体恢复 → 事件唤醒 → 续跑完成。
+4. **plaita-console 本地起服 + 发布验收（部分）**：backend（uvicorn + 本机 redis +
+   PLAITA_CONSOLE_NODE_MODULES/NODE_PATH 业务节点注入钩子，console 同日提交）+ 前端
+   vite 起服；content-daily@1.0.0 发布成功；**console dry-run 全节点 success**（含
+   agent/capture/业务节点全链路）；节点管理识别全部业务节点。
+   遗留：编辑器「编辑」入口打开的是新建 draft 而非已发布版本（前端交互 gap，后端
+   数据/试跑/节点识别均通）；docker compose 构建在本机网络下卡死（改本地 uvicorn+vite）。
