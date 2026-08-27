@@ -132,5 +132,20 @@ redis/db/perf 环境性失败）。
    PLAITA_CONSOLE_NODE_MODULES/NODE_PATH 业务节点注入钩子，console 同日提交）+ 前端
    vite 起服；content-daily@1.0.0 发布成功；**console dry-run 全节点 success**（含
    agent/capture/业务节点全链路）；节点管理识别全部业务节点。
-   遗留：编辑器「编辑」入口打开的是新建 draft 而非已发布版本（前端交互 gap，后端
-   数据/试跑/节点识别均通）；docker compose 构建在本机网络下卡死（改本地 uvicorn+vite）。
+   遗留：~~编辑器「编辑」入口打开的是新建 draft 而非已发布版本~~（已修复：无版本参数时
+   自动选最新已发布版本加载）；docker compose 构建在本机网络下卡死（改本地 uvicorn+vite）。
+
+## Phase 2.5（2026-08-27 晚）：编排界面辨识度 + AI 生成
+
+1. **节点辨识度体系**（console 前端）：族规则解析——Agent 紫🤖 / 命令执行蓝⌨️ /
+   人工确认橙🙋 / 内容池青🗃 / 数据闭环青📈 / 解析判定靛⚖️ / Twitter🐦 / 平台发布📕 /
+   流程上下文🧰 等 12 族 + 节点左色条与图标徽章；未知类型 hash 落色带兜底，
+   画布任意新自定义节点不再"千篇一律"。
+2. **AI 流程生成**：后端为 **agent 宿主**架构——不直连 LLM 端点、不持有模型凭证；
+   经 agentproc 运行真实编码 Agent（recursive/GLM，凭证走其 agents.json），
+   `POST /api/flows/ai-generate/stream` 以 SSE 输出 AG-UI 风格最小事件
+   （run_started/turn_started/line/compile_failed/finished）；编译校验为宿主
+   确定性检查，失败回喂 agent 自纠 ≤3 轮。前端 AiGenerateDialog 实时展示
+   agent 过程并导入画布。真实 GLM 端到端验证：极简确认流生成 → 编译通过（6 节点）。
+3. 过程中沉淀的 @flow AI 提示词铁律（大写占位符调用自定义节点 / return 即结束 /
+   不写 end(...) / 禁创建文件直接输出源码等）已在 ai_flow.py 的任务模板中固化。
