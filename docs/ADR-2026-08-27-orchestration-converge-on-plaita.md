@@ -90,8 +90,28 @@ mediaflow `plaita_flows/`（content-daily 声明式流程 + 业务粘接节点�
    flow 图里不出现大段 prompt 文本。
 3. **审核 ≤2 轮定长展开**为 review-1/verdict/switch + rework/review-2/verdict/switch——
    与源码 `for+break` 语义等价且在图上完全可见。
-4. 发现并绕开（不修改内核）：`FlowExecution.run` 的运行参数须走 `params=`（kwargs 不进 `$INPUT`）；
+4. 运行参数走 `params=`（kwargs 不进 `$INPUT`）——**确认的内核设计**，按官方模式使用；
    EventNode 挂起恢复后 context 中的 `$INPUT`/`$NODE` 快照语义需按"每步传 context"的官方模式使用。
 
-遗留（phase 2）：plaita-console 起服务做可视化验收（含流程发布/版本管理）；HitlNode 的
-挂起版（崩溃级恢复）与 poller 服务；其余 7 个 flow 迁移；GitHub 建仓推送 plaita-nodes。
+## 全量迁移（2026-08-27，同日完成）
+
+其余 7 个内置 flow 全部重构为 plaita 声明式流程，且按负责人决定改用 **`@flow` 源码作为
+权威定义**（`plaita_flows/flows/*.flow`，`flow_from_source` 编译执行；JSON IR 仅为 console
+对接时的按需编译产物，不再入库）。mediaflow 36 + plaita-nodes 28 测试全绿。
+
+迁移中确认的 `@flow` 作者约束（已沉淀为流程编写规范）：
+
+1. 变量名即节点 id：**跨分支同名赋值禁止**（无 phi 合并），分支合流用 `FIRST_NON_NULL`；
+2. map 子流程的 end 不能引用 if 块内赋值的节点——**每项结果经 run 级报告文件**
+   （`.flowcast/plaita-reports/<token>.jsonl`）传给主流程聚合，body 返回字面量；
+3. `timeout=` 是节点级 ISO 超时的保留 kwargs；接表达式的节点字段一律 `Optional[Any]`；
+4. `FlowExecution.run` 的 kwargs 不进 `$INPUT`（确定的设计），运行参数走 `params=`。
+
+顺带修复 plaita 内核一处分歧于文档语义的表达式求值缺陷：`$NODE` 路径的普通字符串
+属性值（含 `[tag]`/引号/换行等元字符）曾被无条件当表达式二次解析（mediaflow 真实
+节点输出 "[promo] ..." 触发误导性 KeyError）。修复为仅对 `$` 前缀变量 / `{% %}` 模板
+递归，附回归测试；plaita 全量 unit（3243 passed）零回归（14 个失败为改动前即有的
+redis/db/perf 环境性失败）。
+
+遗留（phase 2）：plaita-console 起服务做可视化验收（含流程发布/版本管理）；HitlNode
+挂起版（崩溃级恢复）与 poller 服务；GitHub 建仓推送 plaita-nodes。
