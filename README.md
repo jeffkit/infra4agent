@@ -26,6 +26,8 @@ AI Agent **基础设施逻辑大仓** — 用 [monarbor](https://pypi.org/projec
 | [argusai](https://github.com/jeffkit/argusai) | 配置驱动的 Docker E2E + MCP |
 | [argusai-marketplace](https://github.com/jeffkit/argusai-marketplace) | ArgusAI 的 Claude Code Plugin 分发 |
 | [issue-keeper](https://github.com/jeffkit/issue-keeper) | Issue 监控 → 安全过滤 → Agent 回复 |
+| [mediaflow](https://github.com/jeffkit/mediaflow) | KONG 全自动化自媒体运营系统（Flowcast 编排：公众号全自动 / 小红书半自动 / MiniMax 视频） |
+| [deepseek-harness](https://github.com/jeffkit/deepseek-harness) | DeepSeek Harness fork（feat/headless-resume）：headless --resume、Tasks tab、LAVS 宿主适配 |
 
 分层与依赖关系见架构文档；清单以 [`mona.yaml`](./mona.yaml) 为准。
 

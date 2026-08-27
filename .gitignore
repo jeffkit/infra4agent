@@ -19,24 +19,13 @@
 # monarbor 本地覆盖
 mona.local.yaml
 
-# Bundle runtime data
-bundles/*/data/*.json
-
 # 通用
 .DS_Store
 .worktrees/
 .onboarding/
 .cursor/
 .workbuddy/
-<<<<<<< HEAD
 
-# ZCode 本地 session 临时文件（skill 等团队共享资源仍入库，见下）
+# ZCode 本地 session 临时文件（skill 等团队共享资源仍入库）
 .zcode/plans/
 .zcode/sessions/
-
-# 子仓（mona.yaml 管理，本地 clone 不追踪）
-deepseek-harness/
-/mediaflow/
-/plaita-nodes/
-=======
->>>>>>> 3cd6d45 (feat(ADR): 编排双轨收敛 plaita+agentproc——试点通过，登记 plaita-nodes 子仓)
