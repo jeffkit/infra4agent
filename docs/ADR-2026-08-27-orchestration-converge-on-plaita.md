@@ -135,6 +135,37 @@ redis/db/perf 环境性失败）。
    遗留：~~编辑器「编辑」入口打开的是新建 draft 而非已发布版本~~（已修复：无版本参数时
    自动选最新已发布版本加载）；docker compose 构建在本机网络下卡死（改本地 uvicorn+vite）。
 
+## Phase 2.6（2026-08-28）：PGE 迁移评估与试点——替换论验收
+
+负责人校准目标：plaita 的终局是**替换 flowcast**（或基于 plaita 重建 flowcast 做的事），
+因此 PGE（flowcast 旗舰示例，1082 行软件开发编排）必须做真迁移评估，而非划出范围。
+
+**评估结论：可迁移，无硬缺口。** 逐项映射全部落到现有原语：
+
+| PGE 构件 | plaita 对应物 |
+|---|---|
+| 断点续跑 | Distributed 挂起/恢复 ✅ |
+| runProfile | AGENTRUN（agentproc）✅ |
+| runGates | CAPTURE + CODE 判定 ✅ |
+| git worktree/baseline | CAPTURE git 序列 + pge_lib ✅ |
+| structured 输出 | LLM json_mode + CODE 解析 ✅ |
+| 循环直到绿 | Loop.condition（break 语义）✅ |
+| HITL/notify | HITL_AWAIT / NOTIFY ✅ |
+
+**已落地**：`plaita/examples/pge/`（pge.flow 37 节点 + pge_lib.py + README），
+plaita unit 全量回归通过（3266 passed）。真跑验收（目标仓上真实 GLM 修复循环）待排期。
+
+**节点抽象原则修正（负责人定调）**：Agent 节点 ≠ LLM 节点——前者多步工具循环，
+后者单次补全生成文本；两者不可互相替代。原子抽象三原则：**原子性**（单一不可
+再分职责）、**通用性**（不绑业务语义与凭证）、**普适性**。已新增 `llm` 原子
+（OpenAI 兼容单次补全，凭证三级解析），agentrun 通用性修正（profile 参数化）。
+纯变换不做节点——注册为 `F.*` 表达式函数；业务轻逻辑用 CODE 节点（业务包纯函数
++ 单行 import）。
+
+**对 flowcast 的最终定位（更新）**：原语能力逐个沉淀为 plaita 原子/F 函数，
+PGE 这类场景重建为 plaita 流程后，flowcast 退为历史参考；不再保留"自迭代
+留在 flowcast"的双轨。
+
 ## Phase 2.5（2026-08-27 晚）：编排界面辨识度 + AI 生成
 
 1. **节点辨识度体系**（console 前端）：族规则解析——Agent 紫🤖 / 命令执行蓝⌨️ /
