@@ -166,6 +166,27 @@ plaita unit 全量回归通过（3266 passed）。真跑验收（目标仓上真
 PGE 这类场景重建为 plaita 流程后，flowcast 退为历史参考；不再保留"自迭代
 留在 flowcast"的双轨。
 
+## Phase 2.7（2026-08-28）：PGE 真跑调试——机制全通，卡点收敛为提示词工程
+
+6 轮真实 GLM 调试，逐层剥出 4 个真问题并全部修复/定位：
+
+1. **recursive headless 下工具调用默认全拒**——generator"只说不做"的根因。
+   修复：recursive-direct 执行器补 `--permission-mode auto --headless`；
+   手动验证 recursive 能在 worktree 正确写文件并跑绿 pytest（7 passed）。
+2. **gate 命令环境性失败**（bash -lc 下 python=2.7 无 pytest）——dirty-gate
+   中止**行为正确**（PGE 纪律：baseline 红先修 main）。改用 venv 绝对路径 gate。
+3. **worktree 残留注册**导致 add 失败——worktree_ensure 加 prune 重试；
+   wt_check 后补闸门（不再裸奔到 gate_run）。
+4. **sprint fail 的诊断透传**（s_out2 带 gate2_passed 与 evaluator 原文）。
+
+**当前状态**：全链路机制验证完毕；剩余卡点是 GLM-5.2 在 generator 任务措辞下
+的 agentic 执行稳定性（时而只描述不落盘）——属提示词工程迭代，候选强化措辞
+已写入 examples/pge/README.md 交接用户在 console 试跑界面上迭代。
+
+另：plaita 内核修复一处分歧于文档语义的表达式求值缺陷（`$NODE` 路径普通字符串
+属性不再二次表达式解析——节点输出含 `[tag]`/引号/换行等元字符时曾触发误导性
+KeyError），附回归测试；unit 3243 passed 零回归。
+
 ## Phase 2.5（2026-08-27 晚）：编排界面辨识度 + AI 生成
 
 1. **节点辨识度体系**（console 前端）：族规则解析——Agent 紫🤖 / 命令执行蓝⌨️ /
