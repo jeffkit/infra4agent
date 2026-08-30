@@ -187,6 +187,58 @@ PGE 这类场景重建为 plaita 流程后，flowcast 退为历史参考；不�
 属性不再二次表达式解析——节点输出含 `[tag]`/引号/换行等元字符时曾触发误导性
 KeyError），附回归测试；unit 3243 passed 零回归。
 
+## Phase 2.8（2026-08-30）：管理台可用性收敛——调度器落地 + 全系统功能串测
+
+双独立评估（源码走查 + 确定性检测器 + 浏览器实勘）给出 20/40 可用性分：
+「骨架对、审美在线，但闭环没焊死——编辑器能画却管不住版本与覆盖，执行页能看
+状态却给不出失败真相」。按 P0→P1 修复并全系统串测，9 commit 落 plaita main。
+
+**P0 资产保护（FlowEditor）**：
+
+1. **打开已发布流程静默空画布**的确定性根因：初始化 effect 依赖数组漏
+   `flowQuery.data`，元数据到达不触发「自动选已发布版本」。补依赖 + 补
+   loading/error/retry 面。发布即不可变：编辑已发布版本自动另存新版本
+   （后端 flow_store 的不可覆盖守卫本就存在，前端从对抗改为对齐）；发布
+   确认含结构变更摘要；未保存拦截（beforeunload + useBlocker，App 切
+   createBrowserRouter）+ Cmd+S；AI 导入覆盖前确认。
+2. **排障链**：Dashboard 卡片/行可下钻、计数走 status 筛选 total；详情页
+   错误解析 + 节点时间线（兼容 `$NODE`/`nodes` 双形态）+ flow_id 链回
+   编辑器；FlowViewer 改用真实定义建图（分支不再按执行序画错）；SSE 断开
+   回落轮询并提示；StartFlowDialog 流程选择器（不再要求背 flow_id）。
+
+**调度器（schedule_service）落地**：cron → 与手动启动一致的消息形状 XADD
+进任务 Stream，调度器自身不碰定义不执行；错过不补偿（skip-forward）、NX 锁
+防双发、触发历史 50 条；console `/api/schedules` CRUD + 立即触发 + cron 预览；
+前端「触发器」页。设计说明见 plaita 仓 `docs/scheduler-design.md`。
+
+**全系统串测剥出的断点（全部修复，均已实测闭环）**：
+
+1. **手动启动从未到过 worker**：console 入队用 rpush（list），FlowWorker 用
+   Stream 消费组读同一 key，类型冲突——统一 XADD；queues API 对 Stream 调
+   LLEN 直接 500，改按实际类型取长度/明细。
+2. **双存储断层**：console 流程库在 SQLite，FlowWorker 从引擎 Redis 存储解析
+   定义——「发布成功、启动必失败」。发布时同步定义到引擎存储（新增
+   `services/engine_sync.py`），删除流程/版本同步清理。
+3. **worker 集体暴毙（5 秒必退）**：redis-py 5+ 把阻塞超时从「返回 None」改为
+   「抛 TimeoutError」，引擎三处循环（控制通道 pubsub / XREADGROUP 主循环 /
+   事件总线订阅任务）全部未接——逐一容忍空轮询超时后 worker 长稳。
+4. **挂起→恢复整链断裂**：扩展节点挂起后的 service_config 无人投递、
+   DelayService 无消费循环、触发事件不带 correlation_id、EventFilter 根本不在
+   集群配置——四处接线后 **delay 流程全自动验证**：启动 → suspended →
+   3.0s 延迟任务 → 事件（correlation=execution_id）→ EventFilter 匹配订阅 →
+   resume → completed。
+5. **事件/订阅键位错位**：手动发布走 `plaita:event:channel:*` 而引擎总线听
+   `plaita:events:{type}`；订阅删除 key 差 `data:` 段；订阅列表撞集合键 500。
+6. **服务启动器只注册不心跳**：注册 30s TTL 过期后拓扑/服务列表失明（拓扑页
+   「6 节点变空图」的另一半真相）——schedule_service 内置修复，
+   delay_service 家族同病待引擎侧跟进。
+
+**遗留**：① content-daily 现网定义使用引擎不识别的节点类型
+（flowctx/first_non_null/summarize/notify），任何执行都会被 worker 丢弃——
+需引擎补节点或修订义；② 执行记录 flow_version 引擎未回填（详情页显示
+「最新」）；③ 多调度实例下 next_run_at 竞态回写以先到者为准（v1 以
+max_instances=1 表达单实例意图）。
+
 ## Phase 2.5（2026-08-27 晚）：编排界面辨识度 + AI 生成
 
 1. **节点辨识度体系**（console 前端）：族规则解析——Agent 紫🤖 / 命令执行蓝⌨️ /
