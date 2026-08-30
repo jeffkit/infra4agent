@@ -234,10 +234,16 @@ KeyError），附回归测试；unit 3243 passed 零回归。
    delay_service 家族同病待引擎侧跟进。
 
 **遗留**：① content-daily 现网定义使用引擎不识别的节点类型
-（flowctx/first_non_null/summarize/notify），任何执行都会被 worker 丢弃——
-需引擎补节点或修订义；② 执行记录 flow_version 引擎未回填（详情页显示
-「最新」）；③ 多调度实例下 next_run_at 竞态回写以先到者为准（v1 以
-max_instances=1 表达单实例意图）。
+（flowctx/first_non_null/summarize/notify 等 16 个）——**已解决（同日）**：
+节点实现早已存在（mediaflow `plaita_flows/nodes.py` 44 个粘接节点 +
+plaita-nodes 仓的 agentrun/capture/writefile/notify/gate），缺的只是
+console 拉起的 worker 不加载它们。补 worker 侧 `PLAITA_NODE_PATH` /
+`PLAITA_NODE_MODULES` 加载机制 + service_manager 支持 `PLAITA_PYTHON`
+业务 venv 解释器 + flow_worker 集群接线后，**content-daily 经 console
+真实执行 completed（18s，twitter 单平台，含真实 GLM agent 写稿，
+产物落 mediaflow drafts/2026-08-30/）**；② 执行记录 flow_version 引擎
+未回填（详情页显示「最新」）；③ 多调度实例下 next_run_at 竞态回写以
+先到者为准（v1 以 max_instances=1 表达单实例意图）。
 
 ## Phase 2.5（2026-08-27 晚）：编排界面辨识度 + AI 生成
 
