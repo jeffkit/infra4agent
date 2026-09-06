@@ -1,6 +1,6 @@
 # infra4agent 架构文档
 
-> 最后更新：2026-08-27（hil-mcp 三渠道 / mediaflow 全量迁移 plaita）  
+> 最后更新：2026-09-06（plaita console 接入 argusai 全系统 E2E）  
 > 维护者：jeffkit  
 > 配置源：根目录 `mona.yaml`（子仓清单以该文件为准）
 
@@ -90,6 +90,7 @@ flowchart TB
   IK -->|CLI| AP
   IK -.->|可选 HitL| HITL
   MAIL -.->|e2e| AA
+  PL -.->|E2E| AA
   MF -->|npm| FC
   MF -.->|发布审核 HITL| HITL
   DSH -->|npm（fork 分支）| LAVS
@@ -165,6 +166,7 @@ flowchart TB
 | `flowcast → hil-mcp` | HITL 后端可走 MCP（历史配置键 `@wecom-hil`） |
 | `issue-keeper → hil-mcp` | keeper 巡检 HitL（可选 MCP） |
 | `agently-mail-client → argusai` | 可选 `e2e.yaml` |
+| `plaita → argusai` | console 全系统 E2E：`plaita-console/e2e.yaml`（9 suite，含 engine 级多进程链路）+ `scripts/e2e-run.sh` 经 mcp2cli/argusai-mcp 驱动；工具链依赖，非包依赖 |
 | `hil-mcp → iLink API` | 默认可直连腾讯端点；语义上可兼容 hub 代理 |
 | `mediaflow → hil-mcp` | 发布 / 互动闭环经微信 HITL 确认（config 驱动，非 npm 依赖） |
 | `im-agentproc ↔ ilink-hub` | 从 hub `src/bridge` 抽离；运行期作为虚拟 token 后端连 Hub 跑 profile | `im-agentproc/src/bridge/transport.rs` |
