@@ -107,7 +107,7 @@ flowchart TB
 6. **im-agentproc 是 agentproc-native 的 IM 桥接运行时**：从 ilink-hub 的 `src/bridge` 抽离，作为虚拟 token 后端连 Hub，把入站 IM 消息路由到 agentproc profile（P0 exec）；当前经 `Transport` trait 已接入 iLink/微信、Telegram、WeCom（智能机器人 WebSocket）、飞书（WebSocket）、Discord（Gateway WebSocket）。Agent 出站投递（文本 + 媒体）通过 im-agentproc 内置的 MCP server（`send_text` / `send_image` / `send_file` / `send_voice`），hub profile 进程通过标准 `mcp_servers` 块连入。
 6. **im-agentproc 是 agentproc-native 的 IM 桥接运行时**：从 ilink-hub 的 `src/bridge` 抽离，作为虚拟 token 后端连 Hub，把入站 IM 消息路由到 agentproc profile（P0 exec）；未来经 `Transport` trait 扩展飞书/Telegram。
 7. **mediaflow 是本大仓唯一的业务应用**：内容生产走 flowcast 编排（创意→文案→配图/视频→发布），发布与互动闭环经 hil-mcp 微信确认；公众号走官方 API 全自动、小红书走 browser-use 半自动、视频走 MiniMax（后三者为仓外能力）。
-8. **deepseek-harness 的集成已转纯插件形态**（[ADR-2026-09-06](./ADR-2026-09-06-dsh-pure-plugin-form.md)）：fork 分支封存；`dsh-lavs-integration` 子仓经官方 profile/bundle/dsh.client 机制仓外挂载 LAVS host 适配、Views/Tasks tab 与 headless `--resume` runner，零上游文件改动。
+8. **deepseek-harness 的集成已转纯插件形态**（[ADR-2026-09-06](./ADR-2026-09-06-dsh-pure-plugin-form.md)）：fork 分支封存；`dsh-lavs-integration` 子仓经官方 profile/bundle/dsh.client 机制仓外挂载 LAVS host 适配、会话头部视图抽屉（workspace/preset/base 三级作用域、数据驱动显隐）与 headless `--resume` runner，零上游文件改动；agent 工具面收敛为 `lavs` CLI + Skill，常驻工具改 opt-in。
 
 ---
 
