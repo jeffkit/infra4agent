@@ -53,3 +53,16 @@
 - 升级模型从「git rebase 全仓」变为「npm 升版本 + 修自己包的编译错」，可进 CI、时机自选
 - 大仓 `ARCHITECTURE.md` 的 dsh 描述同步更新；`mona.yaml` 待 `dsh-lavs-integration` 有 remote
   后登记
+
+## 补记（同日）：Agent 工具面收敛为 CLI + Skill
+
+同日落地 agent 工具面的形态收敛：`lavs_*` 全量注册工具（4 bundle 18 个）改为 **opt-in**
+（`registerAgentTools`，默认关）——常驻工具 schema 是固定上下文税。默认路径改为：
+
+- `lavs` CLI（`dsh-plugin-lavs-cli`，零依赖）：`list` / `schema <bundle>` / `call` 三动词，
+  manifest 驱动、按需加载，经宿主 **loopback 端点**（`~/.dsh/lavs-host.json` 发现文件，
+  Bearer token）路由——CLI 必须过宿主而非直写存储，否则 mutation → SSE → 视图刷新断链
+- `skills/lavs/SKILL.md`：装 `~/.dsh/skills/`（dsh 原生 skill 发现路径），场景知识按需加载
+- mutation 审计记录下沉到 `service.call`：浏览器 RPC / CLI / opt-in 工具三个面共享同一条
+  审计流与 fan-out（顺带修复 iframe 发起的 mutation 不触发视图刷新的存量 bug）
+- e2e 已验：CLI addTodo 往返 + 落盘 + 宿主审计；typecheck/构建全绿
