@@ -166,7 +166,7 @@ flowchart TB
 | `flowcast → hil-mcp` | HITL 后端可走 MCP（历史配置键 `@wecom-hil`） |
 | `issue-keeper → hil-mcp` | keeper 巡检 HitL（可选 MCP） |
 | `agently-mail-client → argusai` | 可选 `e2e.yaml` |
-| `plaita → argusai` | console 全系统 E2E：`plaita-console/e2e.yaml`（14 suite 174 用例：API 面 / 鉴权 RBAC / dry-run / engine 级多进程含 cancel 终态与 switch 分支 / 契约面 HMAC / 调度与外延服务 / 控制台 UI；混沌：Redis 瞬断 + console 重启）+ `scripts/e2e-{run,gate,chaos-*.sh}` 经 mcp2cli/argusai-mcp 驱动；CI 经 `.github/workflows/console-e2e.yml` 路径过滤接入。工具链依赖，非包依赖 |
+| `plaita → argusai` | console 全系统 E2E：`plaita-console/e2e.yaml`（16 suite 231 用例：API 面 / 鉴权 RBAC / dry-run 含 onlyNode / engine 级多进程含 cancel 终态与 switch 分支 / 引擎可靠性（双 worker + DLQ）/ 版本管理与删除联动 / 契约面 HMAC / 调度边界 / 注册表审计 / 控制台 UI；混沌矩阵：Redis 瞬断 / console 重启 / worker 重启 / DLQ）+ `scripts/e2e-{run,gate,chaos-*.sh}` 经 mcp2cli/argusai-mcp 驱动；CI 经 `.github/workflows/console-e2e.yml` 路径过滤接入。工具链依赖，非包依赖 |
 | `hil-mcp → iLink API` | 默认可直连腾讯端点；语义上可兼容 hub 代理 |
 | `mediaflow → hil-mcp` | 发布 / 互动闭环经微信 HITL 确认（config 驱动，非 npm 依赖） |
 | `im-agentproc ↔ ilink-hub` | 从 hub `src/bridge` 抽离；运行期作为虚拟 token 后端连 Hub 跑 profile | `im-agentproc/src/bridge/transport.rs` |
