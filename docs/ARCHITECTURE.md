@@ -1,6 +1,6 @@
 # infra4agent 架构文档
 
-> 最后更新：2026-09-06（plaita console 接入 argusai 全系统 E2E）  
+> 最后更新：2026-09-09（新增 browser-bridge：远程 Agent 操控本地浏览器的扩展 + gateway）  
 > 维护者：jeffkit  
 > 配置源：根目录 `mona.yaml`（子仓清单以该文件为准）
 
@@ -46,6 +46,7 @@ flowchart TB
   subgraph ui["Agent 视图 / 页面操控层"]
     LAVS["lavs"]
     WB["web-bridge"]
+    BB["browser-bridge"]
   end
 
   subgraph orch["编排层（两套并行）"]
@@ -102,7 +103,7 @@ flowchart TB
 1. **agentproc 是横切共享协议**：通道、编排、协同多条链路在进程边界上汇聚到它（stdin turn / stdout NDJSON）。
 2. **flowcast 与 plaita 是并行编排栈**：产品叙事接近，本大仓内**无互依赖**。
 3. **通道三件套**（微信 hub / HITL / 邮件）入口不同，常接到 AgentProc 或 iLink。
-4. **lavs** 与 **web-bridge** 同属「Agent ↔ UI」叙事但路径不同：lavs 是结构化 View 协议（CLI-first + 独立轻量 Host，v1.1 起以 content-type 为主抽象，支持 pinned/dispatch 双宿主模式）；web-bridge 是注入式 DOM/a11y 操控（Electron/Tauri console），本大仓内暂无兄弟硬依赖。
+4. **lavs / web-bridge / browser-bridge 同属「Agent ↔ UI」叙事但路径不同**：lavs 是结构化 View 协议（CLI-first + 独立轻量 Host，v1.1 起以 content-type 为主抽象，支持 pinned/dispatch 双宿主模式）；web-bridge 是注入式 DOM/a11y 操控（Electron/Tauri console），面向本机 Agent 操控桌面 WebView；browser-bridge 是浏览器扩展 + gateway，面向**远程** Agent 经 MCP 操控本地真实浏览器（Chrome/Edge MV3），协议形状与 web-bridge 一致（`{id,method,params}` + `@eN` 引用）。三者互补，互不依赖。
 5. **argusai** 横切做 E2E；**marketplace** 只做 Claude Code 侧分发。
 6. **im-agentproc 是 agentproc-native 的 IM 桥接运行时**：从 ilink-hub 的 `src/bridge` 抽离，作为虚拟 token 后端连 Hub，把入站 IM 消息路由到 agentproc profile（P0 exec）；当前经 `Transport` trait 已接入 iLink/微信、Telegram、WeCom（智能机器人 WebSocket）、飞书（WebSocket）、Discord（Gateway WebSocket）。Agent 出站投递（文本 + 媒体）通过 im-agentproc 内置的 MCP server（`send_text` / `send_image` / `send_file` / `send_voice`），hub profile 进程通过标准 `mcp_servers` 块连入。
 6. **im-agentproc 是 agentproc-native 的 IM 桥接运行时**：从 ilink-hub 的 `src/bridge` 抽离，作为虚拟 token 后端连 Hub，把入站 IM 消息路由到 agentproc profile（P0 exec）；未来经 `Transport` trait 扩展飞书/Telegram。
@@ -125,6 +126,7 @@ flowchart TB
 | `plaita` | Plaita | Python 逻辑编排运行时（JSON/@flow；曾用路径 loki/pyloki） | 编排（流程引擎向） |
 | `lavs` | LAVS | CLI-first 结构化 View 协议：content-type 为主抽象，view bundle 可跨 Agent 复用，配独立轻量 Host 渲染；含 TS/Py SDK | Agent 视图 |
 | `web-bridge` | web-bridge | 注入式 DOM/a11y 桥：MCP/CLI 操控桌面 WebView 页面 | 页面操控 |
+| `browser-bridge` | browser-bridge | MV3 扩展 + MCP gateway：远程 Agent 操控本地真实浏览器（导航/快照/点击输入/截图/执行 JS） | 页面操控 |
 | `mediaflow` | MediaFlow | KONG 自媒体运营：Flowcast 编排创意→文案→配图/视频→审核→发布 | 业务应用 |
 | `argusai` | ArgusAI | YAML 驱动 Docker E2E + `argusai-mcp` | 测试 |
 | `argusai-marketplace` | ArgusAI Marketplace | Claude Code Plugin，拉起 `argusai-mcp` | 测试分发 |
@@ -179,6 +181,7 @@ flowchart TB
 | `plaita` | 与 flowcast 无代码互依赖；自有 approval 节点，非 hil-mcp |
 | `lavs` | 本大仓无引用；集成在 AgentStudio |
 | `web-bridge` | 本大仓无兄弟硬依赖；经 MCP/HTTP 被任意 Agent 消费 |
+| `browser-bridge` | 本大仓无兄弟硬依赖（协议形状对齐 web-bridge，无代码依赖）；经 MCP（streamable HTTP/stdio）被任意 Agent 消费 |
 | `argusai → hil-mcp` | 路线图提及，非当前硬依赖 |
 | `argusai → recursive` | 兼容断言插件（部分已 deprecated） |
 
@@ -262,10 +265,13 @@ flowchart LR
 7. **操控桌面应用 WebView**  
    `web-bridge serve` → 粘贴 inject.js 到 Electron/Tauri DevTools → Agent 经 MCP/CLI 定位与点击输入。
 
-8. **IM 经 AgentProc 桥接（新）**  
+8. **远程 Agent 操控本地浏览器**  
+   本地 Chrome/Edge 装 `browser-bridge` 扩展（options 填 gateway 地址 + token）→ 扩展出站 WebSocket 连远程机器上的 `browser-bridge-gateway serve` → 远程 Agent 经 MCP（streamable HTTP `/mcp`）调 browser_* 工具 → snapshot 得 `@eN` → 点击/输入/截图。同机 agent 亦可 `gateway mcp`（stdio）拉起。
+
+9. **IM 经 AgentProc 桥接**  
    用户 → iLink → `ilink-hub` → `im-agentproc`（虚拟 token 后端）→ agentproc profile（claude-code/codex…）→ 回复；与链路 1 的区别是桥接层走 agentproc-native 的 profile 协议，而非 hub 自带的通用 YAML CLI 后端。
 
-9. **自媒体内容流水线**  
+10. **自媒体内容流水线**  
    `mediaflow` 声明 flow → `flowcast` 编排执行（创意→文案→配图/视频）→ 发布/互动经 hil-mcp 微信确认 → 公众号官方 API 全自动发布 / 小红书 browser-use 半自动。
 
 ---
@@ -295,6 +301,7 @@ flowchart LR
 8. **web-bridge 与 lavs** 叙事已明确分工：lavs 主张「Agent 产生结构化数据 → 渲染对应 view bundle」；web-bridge 主张「Agent 注入操控现有 Web 页面 DOM」。两者互补，不合并。lavs v1.1 新增 dispatch 模式（按 content-type 分发）和独立轻量 Host（`lavs view` 命令），不再依赖 AgentStudio 作唯一宿主。
 9. **ilink-hub 的 `ilink-hub-bridge` 与新建 `im-agentproc` 的关系**——后者从前者 `src/bridge` 抽离，是 agentproc-native 的 IM→本地 CLI 桥接运行时（跑 agentproc profile，遵循 P0 exec）；前者仍保留通用 YAML 驱动的本地 CLI 后端。需确认哪边为 IM→AgentProc 的正式入口（提案 `bridge-as-multi-im-runtime` 指向 im-agentproc 为后继）。
 10. **DSH×LAVS 集成已转纯插件形态**（[ADR-2026-09-06](./ADR-2026-09-06-dsh-pure-plugin-form.md)）：`dsh-lavs-integration` 子仓经官方 profile/bundle 机制仓外挂载，零上游文件改动；8/16 的 fork 集成与 ADR-2026-08-16 的"暂不整合"决议一并由该 ADR 取代。fork 分支封存留档，上游 PR 通道仍关闭（`submit-pr.sh` 作废）。
+11. **web-bridge 与 browser-bridge 分工**：web-bridge 主张「本机 Agent 注入操控 Electron/Tauri 等桌面 WebView」；browser-bridge 主张「远程/本机 Agent 经浏览器扩展 + gateway 操控真实浏览器（Chrome/Edge）」。协议形状有意一致（`{id,method,params}` + `@eN`）降低心智成本，但两者无代码依赖，无合并计划。
 
 ---
 

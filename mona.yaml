@@ -192,6 +192,23 @@ repos:
     dev: main
     test: main
     prod: main
+- path: browser-bridge
+  name: browser-bridge
+  repo_url: git@github.com:jeffkit/browser-bridge.git
+  description: 远程 Agent ↔ 本地浏览器桥：Chrome/Edge MV3 扩展 + MCP gateway。远程 Agent 经标准 MCP 连
+    gateway，gateway 经扩展出站 WebSocket 驱动本地浏览器（导航/快照/点击输入/截图/执行 JS），@eN 引用心智与
+    web-bridge 一致；MCP 提供 streamable HTTP 与 stdio 双入口。
+  tech_stack:
+  - TypeScript
+  - Chrome Extension (MV3)
+  - MCP
+  - WebSocket
+  - pnpm workspace
+  - vitest
+  branches:
+    dev: main
+    test: main
+    prod: main
 - path: mediaflow
   name: MediaFlow
   repo_url: git@github.com:jeffkit/mediaflow.git
