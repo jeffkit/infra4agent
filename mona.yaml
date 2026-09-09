@@ -195,12 +195,13 @@ repos:
 - path: browser-bridge
   name: browser-bridge
   repo_url: git@github.com:jeffkit/browser-bridge.git
-  description: 远程 Agent ↔ 本地浏览器桥：Chrome/Edge MV3 扩展 + MCP gateway。远程 Agent 经标准 MCP 连
+  description: 远程 Agent ↔ 本地浏览器桥：浏览器扩展（Chromium + Firefox）+ MCP gateway。远程 Agent 经标准 MCP 连
     gateway，gateway 经扩展出站 WebSocket 驱动本地浏览器（导航/快照/点击输入/截图/执行 JS），@eN 引用心智与
-    web-bridge 一致；MCP 提供 streamable HTTP 与 stdio 双入口。
+    web-bridge 一致；三部署形态 serve/mcp/relay（公网中转、多浏览器 browserId 路由、MCP Bearer 鉴权）。
   tech_stack:
   - TypeScript
   - Chrome Extension (MV3)
+  - Firefox Extension (MV3)
   - MCP
   - WebSocket
   - pnpm workspace
