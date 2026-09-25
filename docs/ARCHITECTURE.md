@@ -1,6 +1,6 @@
 # infra4agent 架构文档
 
-> 最后更新：2026-09-09（新增 browser-bridge：远程 Agent 操控本地浏览器的扩展 + gateway）  
+> 最后更新：2026-09-25（新增 tunely：公网 WebSocket 反向代理隧道，已部署 crypto 暴露本机 DSH）  
 > 维护者：jeffkit  
 > 配置源：根目录 `mona.yaml`（子仓清单以该文件为准）
 
@@ -66,6 +66,10 @@ flowchart TB
     MAIL["agently-mail-client"]
   end
 
+  subgraph tunnel["公网隧道层"]
+    TN["tunely"]
+  end
+
   subgraph shared["共享协议层"]
     AP["agentproc"]
     ILINK["微信 iLink HTTP API<br/>（仓外）"]
@@ -95,6 +99,7 @@ flowchart TB
   MF -->|npm| FC
   MF -.->|发布审核 HITL| HITL
   DSH -->|npm（fork 分支）| LAVS
+  TN -.->|公网暴露 DSH web（crypto@dsht.agentstudio.cc）| DSH
   LAVS -.->|集成宿主| AS
 ```
 
@@ -109,6 +114,7 @@ flowchart TB
 6. **im-agentproc 是 agentproc-native 的 IM 桥接运行时**：从 ilink-hub 的 `src/bridge` 抽离，作为虚拟 token 后端连 Hub，把入站 IM 消息路由到 agentproc profile（P0 exec）；未来经 `Transport` trait 扩展飞书/Telegram。
 7. **mediaflow 是本大仓唯一的业务应用**：内容生产走 flowcast 编排（创意→文案→配图/视频→发布），发布与互动闭环经 hil-mcp 微信确认；公众号走官方 API 全自动、小红书走 browser-use 半自动、视频走 MiniMax（后三者为仓外能力）。
 8. **deepseek-harness 的集成已转纯插件形态**（[ADR-2026-09-06](./ADR-2026-09-06-dsh-pure-plugin-form.md)）：fork 分支封存；`dsh-lavs-integration` 子仓经官方 profile/bundle/dsh.client 机制仓外挂载 LAVS host 适配、会话头部视图抽屉（workspace/preset/base 三级作用域、数据驱动显隐）与 headless `--resume` runner，零上游文件改动；agent 工具面收敛为 `lavs` CLI + Skill，常驻工具改 opt-in。
+9. **tunely 是唯一的公网隧道**：内网客户端主动拨出 WebSocket（不开入站端口），字节级透传 TCP 流量——HTTP/WebSocket/SSE 全部原样穿过（Host/Origin 不改写）。Python 服务端（API 管理面 + `tcp_listen_port` 裸 TCP 出口两种形态）+ Python/TypeScript/Rust 三客户端（Rust 单二进制零运行时）。当前部署：crypto 上 9080 出口固定转发 `dsh` 隧道，暴露本机 DSH web。
 
 ---
 
@@ -128,6 +134,7 @@ flowchart TB
 | `web-bridge` | web-bridge | 注入式 DOM/a11y 桥：MCP/CLI 操控桌面 WebView 页面 | 页面操控 |
 | `browser-bridge` | browser-bridge | MV3 扩展（Chromium+Firefox）+ MCP gateway：远程 Agent 操控本地真实浏览器；serve/mcp/relay 三部署形态，多浏览器 browserId 路由 | 页面操控 |
 | `mediaflow` | MediaFlow | KONG 自媒体运营：Flowcast 编排创意→文案→配图/视频→审核→发布 | 业务应用 |
+| `tunely` | Tunely | WebSocket 反向代理隧道：内网服务经公网 HTTPS 可达；Py 服务端 + Py/TS/Rust 客户端（Rust 单二进制） | 公网隧道 |
 | `argusai` | ArgusAI | YAML 驱动 Docker E2E + `argusai-mcp` | 测试 |
 | `argusai-marketplace` | ArgusAI Marketplace | Claude Code Plugin，拉起 `argusai-mcp` | 测试分发 |
 | `issue-keeper` | Issue Keeper | 监控 issue → screener → agentproc → 写回评论 | 协同工具 |

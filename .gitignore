@@ -17,6 +17,7 @@
 /dsh-lavs-integration/
 /plaita-nodes/
 /browser-bridge/
+/tunely/
 
 # monarbor 本地覆盖
 mona.local.yaml

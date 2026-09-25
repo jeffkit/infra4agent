@@ -195,9 +195,9 @@ repos:
 - path: browser-bridge
   name: browser-bridge
   repo_url: git@github.com:jeffkit/browser-bridge.git
-  description: 远程 Agent ↔ 本地浏览器桥：浏览器扩展（Chromium + Firefox）+ MCP gateway。远程 Agent 经标准 MCP 连
-    gateway，gateway 经扩展出站 WebSocket 驱动本地浏览器（导航/快照/点击输入/截图/执行 JS），@eN 引用心智与
-    web-bridge 一致；三部署形态 serve/mcp/relay（公网中转、多浏览器 browserId 路由、MCP Bearer 鉴权）。
+  description: 远程 Agent ↔ 本地浏览器桥：浏览器扩展（Chromium + Firefox）+ MCP gateway。远程 Agent 经标准
+    MCP 连 gateway，gateway 经扩展出站 WebSocket 驱动本地浏览器（导航/快照/点击输入/截图/执行 JS），@eN 引用心智与 web-bridge
+    一致；三部署形态 serve/mcp/relay（公网中转、多浏览器 browserId 路由、MCP Bearer 鉴权）。
   tech_stack:
   - TypeScript
   - Chrome Extension (MV3)
@@ -229,8 +229,8 @@ repos:
 - path: plaita-nodes
   name: plaita-nodes
   repo_url: git@github.com:jeffkit/plaita-nodes.git
-  description: plaita 通用节点集（infra 级）：AgentRun（经 agentproc 调 Agent CLI，复用 flowcast 的
-    agents/providers 配置）、Capture、Hitl（直连 hitl-server 微信通道）、Notify、WriteFile。ADR-2026-08-27
+  description: plaita 通用节点集（infra 级）：AgentRun（经 agentproc 调 Agent CLI，复用 flowcast
+    的 agents/providers 配置）、Capture、Hitl（直连 hitl-server 微信通道）、Notify、WriteFile。ADR-2026-08-27
     编排收敛决议的节点承载层，业务粘接节点不放本仓。
   tech_stack:
   - Python
@@ -260,3 +260,19 @@ repos:
     dev: feat/headless-resume
     test: feat/headless-resume
     prod: feat/headless-resume
+- path: tunely
+  name: Tunely
+  repo_url: git@github.com:jeffkit/tunely.git
+  description: WebSocket 反向代理隧道：内网服务经公网 HTTPS 可达。Python 服务端（FastAPI + TCP
+    监听双形态）+ Python/TypeScript/Rust 三客户端；Rust 为单二进制零运行时。已部署
+    crypto 暴露本机 DSH（dsht.agentstudio.cc）。
+  tech_stack:
+  - Python
+  - FastAPI
+  - TypeScript
+  - Rust
+  - WebSocket
+  branches:
+    dev: main
+    test: main
+    prod: main
