@@ -138,7 +138,7 @@ flowchart TB
 | `argusai` | ArgusAI | YAML 驱动 Docker E2E + `argusai-mcp` | 测试 |
 | `argusai-marketplace` | ArgusAI Marketplace | Claude Code Plugin，拉起 `argusai-mcp` | 测试分发 |
 | `issue-keeper` | Issue Keeper | 监控 issue → screener → agentproc → 写回评论 | 协同工具 |
-| `deepseek-harness` | DeepSeek Harness (fork) | DeepSeek Harness 的 fork：上游运行时参照；集成物已迁出至 `dsh-lavs-integration` 纯插件形态，fork 分支封存 | Agent 运行时 |
+| `deepseek-harness` | DeepSeek Harness | 上游 pristine 镜像（master 跟随 upstream，不改源码）；历史 fork 改造封存于 feat/headless-resume，集成物在 `dsh-lavs-integration` 纯插件形态 | Agent 运行时 |
 | `plaita-nodes` | plaita-nodes | plaita 通用节点集：AgentRun（经 agentproc）/Capture/Hitl/Notify/WriteFile | 编排插件（节点层） |
 
 ---

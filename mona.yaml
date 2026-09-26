@@ -242,12 +242,12 @@ repos:
     test: main
     prod: main
 - path: deepseek-harness
-  name: DeepSeek Harness (fork)
+  name: DeepSeek Harness
   repo_url: git@github.com:jeffkit/deepseek-harness.git
-  description: DeepSeek Harness 的 fork（上游 deepseek-ai/deepseek-harness）：agent 运行时（万物皆插件、profile/bundle/patch
-    分层组合、事件溯源 session log、approval seam、subagent）。fork 分支 feat/headless-resume 新增：headless
-    --resume、Tasks tab（todo 投影的一等任务视图）、LAVS 宿主适配（agent 工具 + SSE AI Sync + preset-scoped
-    bundle 可见性）。上游 issues/PR 暂对外关闭。
+  description: DeepSeek Harness（上游 deepseek-ai/deepseek-harness）：agent 运行时（万物皆插件、profile/bundle/patch
+    分层组合、事件溯源 session log、approval seam、subagent）。本仓 master 跟随上游 pristine master，不改任何源码；
+    历史源码级改造（headless --resume、Tasks tab、LAVS 宿主适配）封存于 fork 分支 feat/headless-resume，功能改由
+    仓外插件集 dsh-lavs-integration（bundles/profile/skill）经官方 profile+bundle 机制挂载实现。
   tech_stack:
   - TypeScript
   - Cordis
@@ -257,9 +257,9 @@ repos:
   - Plugin System
   - LAVS
   branches:
-    dev: feat/headless-resume
-    test: feat/headless-resume
-    prod: feat/headless-resume
+    dev: master
+    test: master
+    prod: master
 - path: tunely
   name: Tunely
   repo_url: git@github.com:jeffkit/tunely.git

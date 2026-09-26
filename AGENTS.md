@@ -53,7 +53,7 @@ monarbor add --path <p> --name "<n>" --url <git-url> \
 
 ## 当前状态
 
-**当前里程碑：** 18 子仓已登记（含从 ilink-hub 抽离的 im-agentproc、业务应用 mediaflow、DeepSeek Harness fork、编排节点层 plaita-nodes、页面操控层 browser-bridge、公网隧道 tunely——已部署 crypto 暴露本机 DSH）；架构文档持续同步。
+**当前里程碑：** 18 子仓已登记（含从 ilink-hub 抽离的 im-agentproc、业务应用 mediaflow、DeepSeek Harness 上游镜像、编排节点层 plaita-nodes、页面操控层 browser-bridge、公网隧道 tunely——已部署 crypto 暴露本机 DSH）；架构文档持续同步。
 
 ## 深入阅读
 
