@@ -115,7 +115,7 @@ flowchart TB
 6. **im-agentproc 是 agentproc-native 的 IM 桥接运行时**：从 ilink-hub 的 `src/bridge` 抽离，作为虚拟 token 后端连 Hub，把入站 IM 消息路由到 agentproc profile（P0 exec）；当前经 `Transport` trait 已接入 iLink/微信、Telegram、WeCom（智能机器人 WebSocket）、飞书（WebSocket）、Discord（Gateway WebSocket）。Agent 出站投递（文本 + 媒体）通过 im-agentproc 内置的 MCP server（`send_text` / `send_image` / `send_file` / `send_voice`），hub profile 进程通过标准 `mcp_servers` 块连入。
 6. **im-agentproc 是 agentproc-native 的 IM 桥接运行时**：从 ilink-hub 的 `src/bridge` 抽离，作为虚拟 token 后端连 Hub，把入站 IM 消息路由到 agentproc profile（P0 exec）；未来经 `Transport` trait 扩展飞书/Telegram。
 7. **mediaflow 是本大仓唯一的业务应用**：内容生产走 flowcast 编排（创意→文案→配图/视频→发布），发布与互动闭环经 hil-mcp 微信确认；公众号走官方 API 全自动、小红书走 browser-use 半自动、视频走 MiniMax（后三者为仓外能力）。
-8. **deepseek-harness 的集成已转纯插件形态**（[ADR-2026-09-06](./ADR-2026-09-06-dsh-pure-plugin-form.md)）：fork 分支封存；`dsh-lavs-integration` 子仓经官方 profile/bundle/dsh.client 机制仓外挂载 LAVS host 适配、原生右侧栏视图 tab（**纯项目作用域**：视图只认会话工作目录下 `.lavs/bundles/`，fs.watch 热更新）与 Tasks tab，零上游文件改动；headless `--resume` runner 已退役（上游 ≥0.1.6 原生 `--session-id` adopt + `--json` 取代）；agent 工具面收敛为 `lavs` CLI + Skill，常驻工具改 opt-in。
+8. **deepseek-harness 的集成已转纯插件形态**（[ADR-2026-09-06](./ADR-2026-09-06-dsh-pure-plugin-form.md)）：fork 分支封存；`dsh-lavs-integration` 公开子仓经官方 profile/bundle/dsh.client 机制仓外挂载 LAVS host 适配、原生右侧栏视图 tab（**纯项目作用域**：视图只认会话工作目录下 `.lavs/bundles/`，fs.watch 热更新），零上游文件改动；**已发 npm `@jeffkit/dsh-bundle-lavs` 等四包**，`dsh plugin add` 包名直装（web-app 务必用与运行时同版本的显式版本——上游 dsh-web-app 的 latest 标签停在 0.0.x 会被兼容门拒）；headless `--resume` runner 已退役（上游 ≥0.1.6 原生 `--session-id` adopt + `--json` 取代）；agent 工具面收敛为 `lavs` CLI + Skill，常驻工具改 opt-in；ui-tasks（Tasks tab）待移植 0.1.7 API 暂不随 bundle 发布。
 9. **tunely 是唯一的公网隧道**：内网客户端主动拨出 WebSocket（不开入站端口），字节级透传 TCP 流量——HTTP/WebSocket/SSE 全部原样穿过（Host/Origin 不改写）。Python 服务端（API 管理面 + `tcp_listen_port` 裸 TCP 出口两种形态）+ Python/TypeScript/Rust 三客户端（Rust 单二进制零运行时）。当前部署：crypto 上 9080 出口固定转发 `dsh` 隧道，暴露本机 DSH web。
 
 ---
@@ -162,7 +162,7 @@ flowchart TB
 | `recursive/e2e → argusai` | E2E plugins（常为 file: 布局依赖） | `e2e/plugins/package.json` |
 | `im-agentproc → agentproc` | Rust crate 硬依赖（crates.io 0.11，非 git rev pin） | `im-agentproc/Cargo.toml` |
 | `mediaflow → flowcast` | npm 依赖 `file:../flowcast`；所有 flow 经 `flowcast run` 驱动 | `mediaflow/package.json` |
-| `dsh-lavs-integration → deepseek-harness` | peerDependencies 全 `*`（运行时由 dsh 安装树 parent-walk 供给）；类型经 tsconfig paths 锚定 dsh master 工作树 `lib/types`；经 `dsh plugin --profile lavs add file:` 仓外挂载 | `bundles/lavs/package.json` |
+| `dsh-lavs-integration → deepseek-harness` | `@deepseek-ai/dsh-*` peer 锚 `^0.1.7-rc.2`（dsh 兼容门安装前预检），类型为根 devDeps 精确锁 npm 包；已发 npm（`@jeffkit/dsh-bundle-lavs` 等，`dsh plugin add` 包名直装），开发期 tarball/`file:` 挂载 | `bundles/lavs/cordis.patch.yml` |
 | `plaita-nodes → plaita` | Python 包依赖（editable，plaita 0.5.0 未发 PyPI） | `plaita-nodes/pyproject.toml` |
 | `plaita-nodes → agentproc` | Python SDK 依赖（`runner.run` + `EXECUTORS` 注册 recursive-direct） | `plaita-nodes/src/plaita_nodes/agent_run.py` |
 | `mediaflow → plaita-nodes` | 试点迁移（ADR-2026-08-27）：content-daily 经 plaita + 节点集运行 | `mediaflow/plaita_flows/` |
