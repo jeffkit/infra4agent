@@ -180,6 +180,7 @@ flowchart TB
 | `mediaflow → hil-mcp` | 发布 / 互动闭环经微信 HITL 确认（config 驱动，非 npm 依赖） |
 | `im-agentproc ↔ ilink-hub` | 从 hub `src/bridge` 抽离；运行期作为虚拟 token 后端连 Hub 跑 profile | `im-agentproc/src/bridge/transport.rs` |
 | `im-agentproc → agentproc` | 每条入站 IM 消息触发一次 agentproc profile（P0 exec 协议） | `im-agentproc/src/bin/im-agentproc.rs` |
+| `issue-keeper screener → plaita-console` | screener `backend=flow`：拉 console 上已发布 `issue-screener` flow 定义（semver 最高，X-Admin-API-Key，TTL+stale 缓存+本地凭据回退），本地 DecisionNode 执行；判定配置的版本与质量由 plaita-ai supervisor 自迭代管线管护 | `issue_keeper/screener.py` |
 
 ### 4.3 文档级 / 无兄弟硬边
 
