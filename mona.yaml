@@ -265,8 +265,8 @@ repos:
   repo_url: git@github.com:jeffkit/dsh-lavs-integration.git
   description: DeepSeek Harness 仓外插件集（公开）：不 fork DSH、零上游文件改动，经官方 profile+bundle
     机制挂载 LAVS 集成——lavs-host 按会话工作目录发现 .lavs/bundles/ 并同源 serve 视图与 /lavs
-    RPC、ui-lavs 原生右侧栏 tab、lavs-cli+skill 作 agent 面。已发 npm：@jeffkit/dsh-bundle-lavs
-    等，dsh plugin add 包名直装；ui-tasks 待移植 0.1.7 API（暂不随 bundle 发布）。
+    RPC、ui-lavs 原生右侧栏 tab、lavs-cli+skill 作 agent 面。已发 npm：dsh-bundle-lavs 等
+    裸名四包，dsh plugin add 包名直装；ui-tasks 待移植 0.1.7 API（暂不随 bundle 发布）。
   tech_stack:
   - TypeScript
   - pnpm
