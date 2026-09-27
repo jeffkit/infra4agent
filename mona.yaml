@@ -260,6 +260,23 @@ repos:
     dev: master
     test: master
     prod: master
+- path: dsh-lavs-integration
+  name: dsh-lavs-integration
+  repo_url: git@github.com:jeffkit/dsh-lavs-integration.git
+  description: DeepSeek Harness 仓外插件集（私有）：不 fork DSH、零上游文件改动，经官方 profile+bundle
+    机制挂载 LAVS 集成——lavs-host 按会话工作目录发现 .lavs/bundles/ 并同源 serve 视图与 /lavs
+    RPC、ui-lavs 原生右侧栏 tab、ui-tasks todo 投影、lavs-cli+skill 作 agent 面（MCP 常驻工具的上下文经济替代）。
+  tech_stack:
+  - TypeScript
+  - pnpm
+  - Cordis
+  - dsh Plugin/Bundle
+  - LAVS
+  - Vitest
+  branches:
+    dev: main
+    test: main
+    prod: main
 - path: tunely
   name: Tunely
   repo_url: git@github.com:jeffkit/tunely.git
