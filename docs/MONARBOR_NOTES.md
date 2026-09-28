@@ -135,6 +135,11 @@ monarbor 已登记为本大仓第 21 个子仓（`monarbor/`），修复就地�
 - `list_repos` 改为传入 `exclude_paths=registered_repo_abs_paths(config)`——**缺陷 B 的正解**，不再递归进入已注册子仓；
 - `clone -r` 复用同一 helper，去掉重复实现。
 
+`monarbor/monarbor/__init__.py`（顺带修掉的版本漂移）
+
+- `__version__` 从 0.3.0 同步到 0.4.0：上游 0.4.0 的 bump 提交只改了 `pyproject.toml`、漏改此处，而 `click.version_option` 读的是包内 `__version__`，导致 `monarbor --version` 在 0.4.0 上仍报 0.3.0；
+- 新增 `monarbor/tests/test_version_consistency.py`，断言 `__version__` 与 `pyproject.toml` 一致，防止后续 bump 再次漏改。
+
 ### 6.2 回归测试
 
 新增 `monarbor/tests/test_nested_scan_safety.py`（8 个用例，独立文件、不改动上游 PR 的测试文件）：
@@ -151,11 +156,14 @@ monarbor 已登记为本大仓第 21 个子仓（`monarbor/`），修复就地�
 
 ```
 修复前：  58 passed
-修复后：  66 passed
+修复后：  66 passed（+ 版本一致性用例 = 67）
 修复前 CLI 复现：monarbor list → 退出码 1，OSError [Errno 63] File name too long
 修复后真实树扫描：find_nested_monorepos(infra4agent) → [] ，耗时 0.064s
 修复后 CLI：      monarbor list → 退出码 0，0.66s，21 个子仓全部列出
+修复后 --version：0.4.0（此前误报 0.3.0）
 ```
+
+子仓提交：`0fc706c`（软链环/剪枝修复）、`debe366`（版本同步 + 防漂移测试）。
 
 ### 6.4 安装（本机）
 
@@ -180,4 +188,5 @@ pipx install --force /Users/kong/projects/infra4agent/monarbor
 | 日期 | 事件 |
 |------|------|
 | 2026-09-28 | 发现 `monarbor list` 在 infra4agent 崩溃；定位根因（缺陷 A + B）；实测 0.3.0 与 0.4.0 均未修 |
-| 2026-09-28 | 登记 `monarbor` 为本大仓第 21 子仓，就地在源码层修复 + 8 个回归测试；pipx 重装自子仓路径并验证 |
+| 2026-09-28 | 登记 `monarbor` 为本大仓第 21 子仓，就地在源码层修复 + 8 个回归测试；pipx 重装自子仓路径并验证（子仓提交 `0fc706c`） |
+| 2026-09-28 | 顺带修掉 `__version__` 与 `pyproject.toml` 的版本漂移（`--version` 误报 0.3.0）+ 防漂移测试（子仓提交 `debe366`） |
