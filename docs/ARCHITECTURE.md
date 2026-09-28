@@ -1,6 +1,6 @@
 # infra4agent 架构文档
 
-> 最后更新：2026-09-27（登记 dsh-lavs-integration：DSH 仓外 LAVS 集成插件集，纯项目作用域 v3）  
+> 最后更新：2026-09-28（登记 recursive-providers：recursive 的 LLM provider 预设数据仓）  
 > 维护者：jeffkit  
 > 配置源：根目录 `mona.yaml`（子仓清单以该文件为准）
 
@@ -56,6 +56,7 @@ flowchart TB
 
   subgraph runtime["Agent 运行时"]
     REC["recursive"]
+    RCP["recursive-providers<br/>（provider 预设目录）"]
     DSH["deepseek-harness<br/>（pristine 上游镜像）"]
     DSLI["dsh-lavs-integration<br/>（DSH 仓外插件集）"]
   end
@@ -82,6 +83,7 @@ flowchart TB
 
   FC -->|npm| AP
   FC -->|可选 executor| REC
+  RCP -.->|providers.json 启动时拉取| REC
   FC -.->|可选 HITL| HITL
   REC -->|自改 flow| FC
   REC -.->|可选微信代理| IH
@@ -130,6 +132,7 @@ flowchart TB
 | `hil-mcp` | hitl-mcp | 关键操作前经微信/企微向人确认的 HITL MCP | 通道（人机确认） |
 | `agently-mail-client` | Agently Mail | 邮箱 → AgentProc → 自动回复 | 通道（邮件） |
 | `recursive` | Recursive | Rust ReAct 编码 Agent（HTTP/MCP/TUI/微信） | Agent 运行时 |
+| `recursive-providers` | Recursive Providers | recursive 的 LLM provider 预设目录：providers.json 单一事实源（模型/端点/上下文窗口/定价），agent 启动时自动拉取 | Agent 运行时（配套数据） |
 | `flowcast` | Flowcast | Node workflow：断点续跑、HITL、多 CLI、L3 codegen（曾用名 flowx） | 编排（Agent/CLI 向） |
 | `plaita` | Plaita | Python 逻辑编排运行时（JSON/@flow；曾用路径 loki/pyloki） | 编排（流程引擎向） |
 | `lavs` | LAVS | CLI-first 结构化 View 协议：content-type 为主抽象，view bundle 可跨 Agent 复用，配独立轻量 Host 渲染；含 TS/Py SDK | Agent 视图 |
@@ -173,6 +176,7 @@ flowchart TB
 |----|------|
 | `flowcast → recursive` | 可选 executor（直连 CLI；recursive 未必走 agentproc EXECUTORS） |
 | `recursive → ilink-hub` | 微信 `base_url` / `WEIXIN_BASE_URL` 指向 hub |
+| `recursive → recursive-providers` | 启动时经 raw URL 拉取 providers.json（本地缓存超 7 天刷新）；纯运行期数据源，无构建期依赖 |
 | `ilink-hub → agentproc` | Bridge / profile 协议（NDJSON） |
 | `ilink-hub ↔ agently-mail-client` | 邮件能力从 hub 抽出；双通道共享 AgentProc 思路 |
 | `flowcast → hil-mcp` | HITL 后端可走 MCP（历史配置键 `@wecom-hil`） |

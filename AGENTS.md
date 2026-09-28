@@ -14,7 +14,7 @@
 
 ## 架构地图
 
-分层（下→上）：`agentproc` → 通道（ilink-hub / im-agentproc / hil-mcp / agently-mail）→ 运行时（recursive ‖ deepseek-harness，后者经仓外插件集 dsh-lavs-integration 挂载 LAVS 集成）→ 编排（flowcast ‖ plaita）→ 视图/操控（lavs ‖ web-bridge ‖ browser-bridge）→ argusai(+marketplace) → 协同/业务应用（issue-keeper ‖ mediaflow）。  
+分层（下→上）：`agentproc` → 通道（ilink-hub / im-agentproc / hil-mcp / agently-mail）→ 运行时（recursive——provider 预设由配套数据仓 recursive-providers 供给 ‖ deepseek-harness，后者经仓外插件集 dsh-lavs-integration 挂载 LAVS 集成）→ 编排（flowcast ‖ plaita）→ 视图/操控（lavs ‖ web-bridge ‖ browser-bridge）→ argusai(+marketplace) → 协同/业务应用（issue-keeper ‖ mediaflow）。  
 **编排双轨**：flowcast（Node/CLI）与 plaita（Python Flow）并行、无互依赖。  
 **视图三件**：lavs（结构化 View 协议）、web-bridge（注入式 DOM 操控桌面 WebView）、browser-bridge（MV3 扩展 + gateway，远程 Agent 经 MCP 操控本地真实浏览器）互补、无互依赖；web-bridge 与 browser-bridge 协议形状一致。  
 **横切协议**：多数通道/协同经 agentproc（stdin turn / stdout NDJSON）。  
@@ -53,7 +53,7 @@ monarbor add --path <p> --name "<n>" --url <git-url> \
 
 ## 当前状态
 
-**当前里程碑：** 19 子仓已登记（含从 ilink-hub 抽离的 im-agentproc、业务应用 mediaflow、DeepSeek Harness 上游镜像及其仓外插件集 dsh-lavs-integration、编排节点层 plaita-nodes、页面操控层 browser-bridge、公网隧道 tunely——已部署 crypto 暴露本机 DSH）；架构文档持续同步。
+**当前里程碑：** 20 子仓已登记（含从 ilink-hub 抽离的 im-agentproc、业务应用 mediaflow、DeepSeek Harness 上游镜像及其仓外插件集 dsh-lavs-integration、编排节点层 plaita-nodes、页面操控层 browser-bridge、公网隧道 tunely、recursive 配套 provider 预设目录 recursive-providers——已部署 crypto 暴露本机 DSH）；架构文档持续同步。
 
 ## 深入阅读
 

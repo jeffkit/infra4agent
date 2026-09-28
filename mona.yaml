@@ -263,10 +263,10 @@ repos:
 - path: dsh-lavs-integration
   name: dsh-lavs-integration
   repo_url: git@github.com:jeffkit/dsh-lavs-integration.git
-  description: DeepSeek Harness 仓外插件集（公开）：不 fork DSH、零上游文件改动，经官方 profile+bundle
-    机制挂载 LAVS 集成——lavs-host 按会话工作目录发现 .lavs/bundles/ 并同源 serve 视图与 /lavs
-    RPC、ui-lavs 原生右侧栏 tab、lavs-cli+skill 作 agent 面。已发 npm：dsh-bundle-lavs 等
-    裸名四包，dsh plugin add 包名直装；ui-tasks 待移植 0.1.7 API（暂不随 bundle 发布）。
+  description: DeepSeek Harness 仓外插件集（公开）：不 fork DSH、零上游文件改动，经官方 profile+bundle 机制挂载
+    LAVS 集成——lavs-host 按会话工作目录发现 .lavs/bundles/ 并同源 serve 视图与 /lavs RPC、ui-lavs 原生右侧栏
+    tab、lavs-cli+skill 作 agent 面。已发 npm：dsh-bundle-lavs 等 裸名四包，dsh plugin add 包名直装；ui-tasks
+    待移植 0.1.7 API（暂不随 bundle 发布）。
   tech_stack:
   - TypeScript
   - pnpm
@@ -282,15 +282,29 @@ repos:
 - path: tunely
   name: Tunely
   repo_url: git@github.com:jeffkit/tunely.git
-  description: WebSocket 反向代理隧道：内网服务经公网 HTTPS 可达。Python 服务端（FastAPI + TCP
-    监听双形态）+ Python/TypeScript/Rust 三客户端；Rust 为单二进制零运行时。已部署
-    crypto 暴露本机 DSH（dsht.agentstudio.cc）。
+  description: WebSocket 反向代理隧道：内网服务经公网 HTTPS 可达。Python 服务端（FastAPI + TCP 监听双形态）+
+    Python/TypeScript/Rust 三客户端；Rust 为单二进制零运行时。已部署 crypto 暴露本机 DSH（dsht.agentstudio.cc）。
   tech_stack:
   - Python
   - FastAPI
   - TypeScript
   - Rust
   - WebSocket
+  branches:
+    dev: main
+    test: main
+    prod: main
+- path: recursive-providers
+  name: Recursive Providers
+  repo_url: git@github.com:jeffkit/recursive-providers.git
+  description: Recursive 的 LLM provider 预设目录：providers.json 单一事实源（模型名/API
+    端点/上下文窗口/定价），recursive agent 启动时自动拉取（本地缓存超 7 天刷新）。auto/sync-providers
+    分支由自动化维护。
+  tech_stack:
+  - JSON
+  - Data Catalog
+  - LLM Providers
+  - Markdown
   branches:
     dev: main
     test: main

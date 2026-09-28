@@ -18,6 +18,7 @@
 /plaita-nodes/
 /browser-bridge/
 /tunely/
+/recursive-providers/
 
 # monarbor 本地覆盖
 mona.local.yaml
