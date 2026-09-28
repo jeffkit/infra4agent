@@ -265,8 +265,8 @@ repos:
   repo_url: git@github.com:jeffkit/dsh-lavs-integration.git
   description: DeepSeek Harness 仓外插件集（公开）：不 fork DSH、零上游文件改动，经官方 profile+bundle 机制挂载
     LAVS 集成——lavs-host 按会话工作目录发现 .lavs/bundles/ 并同源 serve 视图与 /lavs RPC、ui-lavs 原生右侧栏
-    tab、lavs-cli+skill 作 agent 面。已发 npm：dsh-bundle-lavs 等 裸名四包，dsh plugin add 包名直装；ui-tasks
-    待移植 0.1.7 API（暂不随 bundle 发布）。
+    tab、ui-tasks Tasks tab（已移植 0.1.7-rc.2 正式 API）、lavs-cli+skill 作 agent 面。已发 npm 裸名五包：
+    dsh-bundle-lavs@0.1.1 + dsh-plugin-{lavs-host,ui-lavs,ui-tasks,lavs-cli}@0.1.0，dsh plugin add 包名直装。
   tech_stack:
   - TypeScript
   - pnpm
@@ -305,6 +305,21 @@ repos:
   - Data Catalog
   - LLM Providers
   - Markdown
+  branches:
+    dev: main
+    test: main
+    prod: main
+- path: monarbor
+  name: Monarbor
+  repo_url: git@github.com:jeffkit/monarbor.git
+  description: 本大仓自身的命令行工具（PyPI monarbor）：一个 mona.yaml 描述全部子仓，统一
+    list/status/clone/pull/exec/checkout/add。嵌套逻辑大仓递归发现已加固（不跟随符号链接、剪枝依赖/构建目录、深度上限兜底），
+    避免 pnpm/vendor 软链环导致 ENAMETOOLONG 崩溃。本机经 pipx 从本仓路径安装为 monarbor 命令。
+  tech_stack:
+  - Python
+  - Click
+  - Rich
+  - CLI
   branches:
     dev: main
     test: main

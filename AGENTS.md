@@ -49,11 +49,14 @@ monarbor add --path <p> --name "<n>" --url <git-url> \
   --dev-branch main --test-branch main --prod-branch main
 ```
 
+monarbor 自身也登记为本仓子仓 `monarbor/`（改工具逻辑就在那里改并提交）。本机经 pipx 从该路径安装；
+若 `monarbor list` 崩溃（软链环 ENAMETOOLONG），见 `docs/MONARBOR_NOTES.md`。
+
 改子仓：`cd <path>` 后在该 git 仓内提交；大仓只提交配置/文档变更。
 
 ## 当前状态
 
-**当前里程碑：** 20 子仓已登记（含从 ilink-hub 抽离的 im-agentproc、业务应用 mediaflow、DeepSeek Harness 上游镜像及其仓外插件集 dsh-lavs-integration、编排节点层 plaita-nodes、页面操控层 browser-bridge、公网隧道 tunely、recursive 配套 provider 预设目录 recursive-providers——已部署 crypto 暴露本机 DSH）；架构文档持续同步。
+**当前里程碑：** 21 子仓已登记（含从 ilink-hub 抽离的 im-agentproc、业务应用 mediaflow、DeepSeek Harness 上游镜像及其仓外插件集 dsh-lavs-integration、编排节点层 plaita-nodes、页面操控层 browser-bridge、公网隧道 tunely、recursive 配套 provider 预设目录 recursive-providers，以及本大仓工具 monarbor 自身——已部署 crypto 暴露本机 DSH）；架构文档持续同步。
 
 ## 深入阅读
 

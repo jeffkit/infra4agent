@@ -1,6 +1,6 @@
 # infra4agent 架构文档
 
-> 最后更新：2026-09-28（登记 recursive-providers：recursive 的 LLM provider 预设数据仓）  
+> 最后更新：2026-09-28（登记 monarbor 为第 21 子仓并加固其嵌套扫描；清理 im-agentproc 重复条目；修正 ui-tasks 发布状态）  
 > 维护者：jeffkit  
 > 配置源：根目录 `mona.yaml`（子仓清单以该文件为准）
 
@@ -115,10 +115,10 @@ flowchart TB
 4. **lavs / web-bridge / browser-bridge 同属「Agent ↔ UI」叙事但路径不同**：lavs 是结构化 View 协议（CLI-first + 独立轻量 Host，v1.1 起以 content-type 为主抽象，支持 pinned/dispatch 双宿主模式）；web-bridge 是注入式 DOM/a11y 操控（Electron/Tauri console），面向本机 Agent 操控桌面 WebView；browser-bridge 是浏览器扩展 + gateway，面向**远程** Agent 经 MCP 操控本地真实浏览器（Chrome/Edge MV3），协议形状与 web-bridge 一致（`{id,method,params}` + `@eN` 引用）。三者互补，互不依赖。
 5. **argusai** 横切做 E2E；**marketplace** 只做 Claude Code 侧分发。
 6. **im-agentproc 是 agentproc-native 的 IM 桥接运行时**：从 ilink-hub 的 `src/bridge` 抽离，作为虚拟 token 后端连 Hub，把入站 IM 消息路由到 agentproc profile（P0 exec）；当前经 `Transport` trait 已接入 iLink/微信、Telegram、WeCom（智能机器人 WebSocket）、飞书（WebSocket）、Discord（Gateway WebSocket）。Agent 出站投递（文本 + 媒体）通过 im-agentproc 内置的 MCP server（`send_text` / `send_image` / `send_file` / `send_voice`），hub profile 进程通过标准 `mcp_servers` 块连入。
-6. **im-agentproc 是 agentproc-native 的 IM 桥接运行时**：从 ilink-hub 的 `src/bridge` 抽离，作为虚拟 token 后端连 Hub，把入站 IM 消息路由到 agentproc profile（P0 exec）；未来经 `Transport` trait 扩展飞书/Telegram。
 7. **mediaflow 是本大仓唯一的业务应用**：内容生产走 flowcast 编排（创意→文案→配图/视频→发布），发布与互动闭环经 hil-mcp 微信确认；公众号走官方 API 全自动、小红书走 browser-use 半自动、视频走 MiniMax（后三者为仓外能力）。
-8. **deepseek-harness 的集成已转纯插件形态**（[ADR-2026-09-06](./ADR-2026-09-06-dsh-pure-plugin-form.md)）：fork 分支封存；`dsh-lavs-integration` 公开子仓经官方 profile/bundle/dsh.client 机制仓外挂载 LAVS host 适配、原生右侧栏视图 tab（**纯项目作用域**：视图只认会话工作目录下 `.lavs/bundles/`，fs.watch 热更新），零上游文件改动；**已发 npm `dsh-bundle-lavs` 等裸名四包**，`dsh plugin add` 包名直装（web-app 务必用与运行时同版本的显式版本——上游 dsh-web-app 的 latest 标签停在 0.0.x 会被兼容门拒）；headless `--resume` runner 已退役（上游 ≥0.1.6 原生 `--session-id` adopt + `--json` 取代）；agent 工具面收敛为 `lavs` CLI + Skill，常驻工具改 opt-in；ui-tasks（Tasks tab）待移植 0.1.7 API 暂不随 bundle 发布。
+8. **deepseek-harness 的集成已转纯插件形态**（[ADR-2026-09-06](./ADR-2026-09-06-dsh-pure-plugin-form.md)）：fork 分支封存；`dsh-lavs-integration` 公开子仓经官方 profile/bundle/dsh.client 机制仓外挂载 LAVS host 适配、原生右侧栏视图 tab（**纯项目作用域**：视图只认会话工作目录下 `.lavs/bundles/`，fs.watch 热更新），零上游文件改动；**已发 npm 裸名五包**——`dsh-bundle-lavs@0.1.1` + `dsh-plugin-{lavs-host,ui-lavs,ui-tasks,lavs-cli}@0.1.0`，`dsh plugin add` 包名直装（web-app 务必用与运行时同版本的显式版本——上游 dsh-web-app 的 latest 标签停在 0.0.x 会被兼容门拒）；headless `--resume` runner 已退役（上游 ≥0.1.6 原生 `--session-id` adopt + `--json` 取代）；agent 工具面收敛为 `lavs` CLI + Skill，常驻工具改 opt-in；ui-tasks（Tasks tab）已移植到 0.1.7-rc.2 正式 API 并**随 `dsh-bundle-lavs@0.1.1` 发布**。
 9. **tunely 是唯一的公网隧道**：内网客户端主动拨出 WebSocket（不开入站端口），字节级透传 TCP 流量——HTTP/WebSocket/SSE 全部原样穿过（Host/Origin 不改写）。Python 服务端（API 管理面 + `tcp_listen_port` 裸 TCP 出口两种形态）+ Python/TypeScript/Rust 三客户端（Rust 单二进制零运行时）。当前部署：crypto 上 9080 出口固定转发 `dsh` 隧道，暴露本机 DSH web。
+10. **monarbor 既是管理本仓的工具，也是本仓子仓**：它按 `mona.yaml` 管理全部子仓，因此自身也登记进来（`monarbor/`，第 21 个子仓）就地迭代——工具缺陷与被它管理的仓同仓可见，避免"工具问题只能靠 `pip install` 的外部版本解决"。本机经 pipx 从该路径安装。近期加固：嵌套大仓递归发现不跟随符号链接、剪枝依赖/构建目录、深度上限兜底，修掉 `monarbor list` 在含 pnpm/vendor 软链环仓库上的 ENAMETOOLONG 崩溃（[MONARBOR_NOTES.md](./MONARBOR_NOTES.md)）。
 
 ---
 
@@ -146,6 +146,7 @@ flowchart TB
 | `deepseek-harness` | DeepSeek Harness | 上游 pristine 镜像（master 跟随 upstream，不改源码）；历史 fork 改造封存于 feat/headless-resume，集成物在 `dsh-lavs-integration` 纯插件形态 | Agent 运行时 |
 | `dsh-lavs-integration` | dsh-lavs-integration | DSH 仓外插件集：LAVS host 适配 + 原生右栏视图 tab（纯项目作用域）+ Tasks tab + `lavs` CLI/Skill，经官方 profile+bundle 挂载，零上游改动 | Agent 运行时（DSH 插件） |
 | `plaita-nodes` | plaita-nodes | plaita 通用节点集：AgentRun（经 agentproc）/Capture/Hitl/Notify/WriteFile | 编排插件（节点层） |
+| `monarbor` | Monarbor | **本大仓自身的命令行工具**：一个 `mona.yaml` 管全部子仓（list/status/clone/pull/exec/checkout/add）；嵌套大仓递归发现已加固（不跟软链、剪枝依赖目录、深度上限） | 大仓工具（管理本仓自身） |
 
 ---
 
@@ -165,7 +166,7 @@ flowchart TB
 | `recursive/e2e → argusai` | E2E plugins（常为 file: 布局依赖） | `e2e/plugins/package.json` |
 | `im-agentproc → agentproc` | Rust crate 硬依赖（crates.io 0.11，非 git rev pin） | `im-agentproc/Cargo.toml` |
 | `mediaflow → flowcast` | npm 依赖 `file:../flowcast`；所有 flow 经 `flowcast run` 驱动 | `mediaflow/package.json` |
-| `dsh-lavs-integration → deepseek-harness` | `@deepseek-ai/dsh-*` peer 锚 `^0.1.7-rc.2`（dsh 兼容门安装前预检），类型为根 devDeps 精确锁 npm 包；已发 npm（`dsh-bundle-lavs` 等裸名四包，`dsh plugin add` 包名直装），开发期 tarball/`file:` 挂载 | `bundles/lavs/cordis.patch.yml` |
+| `dsh-lavs-integration → deepseek-harness` | `@deepseek-ai/dsh-*` peer 锚 `^0.1.7-rc.2`（dsh 兼容门安装前预检），类型为根 devDeps 精确锁 npm 包；已发 npm（裸名五包：`dsh-bundle-lavs@0.1.1` + `dsh-plugin-{lavs-host,ui-lavs,ui-tasks,lavs-cli}@0.1.0`，`dsh plugin add` 包名直装），开发期 tarball/`file:` 挂载 | `bundles/lavs/cordis.patch.yml` |
 | `plaita-nodes → plaita` | Python 包依赖（editable，plaita 0.5.0 未发 PyPI） | `plaita-nodes/pyproject.toml` |
 | `plaita-nodes → agentproc` | Python SDK 依赖（`runner.run` + `EXECUTORS` 注册 recursive-direct） | `plaita-nodes/src/plaita_nodes/agent_run.py` |
 | `mediaflow → plaita-nodes` | 试点迁移（ADR-2026-08-27）：content-daily 经 plaita + 节点集运行 | `mediaflow/plaita_flows/` |
@@ -318,6 +319,7 @@ flowchart LR
 9. **ilink-hub 的 `ilink-hub-bridge` 与新建 `im-agentproc` 的关系**——后者从前者 `src/bridge` 抽离，是 agentproc-native 的 IM→本地 CLI 桥接运行时（跑 agentproc profile，遵循 P0 exec）；前者仍保留通用 YAML 驱动的本地 CLI 后端。需确认哪边为 IM→AgentProc 的正式入口（提案 `bridge-as-multi-im-runtime` 指向 im-agentproc 为后继）。
 10. **DSH×LAVS 集成已转纯插件形态**（[ADR-2026-09-06](./ADR-2026-09-06-dsh-pure-plugin-form.md)）：`dsh-lavs-integration` 子仓经官方 profile/bundle 机制仓外挂载，零上游文件改动；8/16 的 fork 集成与 ADR-2026-08-16 的"暂不整合"决议一并由该 ADR 取代。fork 分支封存留档，上游 PR 通道仍关闭（`submit-pr.sh` 作废）。
 11. **web-bridge 与 browser-bridge 分工**：web-bridge 主张「本机 Agent 注入操控 Electron/Tauri 等桌面 WebView」；browser-bridge 主张「远程/本机 Agent 经浏览器扩展 + gateway 操控真实浏览器（Chrome/Edge）」。协议形状有意一致（`{id,method,params}` + `@eN`）降低心智成本，但两者无代码依赖，无合并计划。
+12. **大仓工具 monarbor 的 `list` 崩溃已修复**（曾为已知缺陷，非配置问题）：`list_repos` 曾无条件调用 `find_nested_monorepos` 且不传 `exclude_paths`，而该函数既不剪枝 `node_modules` 又跟随符号链接；deepseek-harness 的 `vendor/cordis` 与 `vendor/include` 互为软链构成目录环，递归到路径超长（`OSError: [Errno 63] File name too long`）。0.3.0 与 0.4.0 均复现。**修复已落在子仓 `monarbor`**（不跟软链 + 剪枝依赖/构建目录 + 深度上限 + `list_repos` 传精确排除集），并补 8 个回归测试；根因剖析、影响面矩阵与复现见 [MONARBOR_NOTES.md](./MONARBOR_NOTES.md)。
 
 ---
 
@@ -335,4 +337,7 @@ flowchart LR
 | `AGENTS.md` | AI 入仓导航入口 |
 | `mona.yaml` | 子仓清单与描述 |
 | `docs/DOC_CODE_MAP.md` | 文档 ↔ 代码映射 |
+| `docs/MONARBOR_NOTES.md` | monarbor 工具缺陷（`list` 崩溃）与可用命令矩阵 |
+| `docs/ADR-2026-08-27-orchestration-converge-on-plaita.md` | 编排收敛到 plaita 的决议 |
+| `docs/ADR-2026-09-06-dsh-pure-plugin-form.md` | DSH×LAVS 转纯插件形态的决议 |
 | 各子仓 `AGENTS.md` | 子仓内 AI 导航 |

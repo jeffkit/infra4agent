@@ -19,6 +19,7 @@
 /browser-bridge/
 /tunely/
 /recursive-providers/
+/monarbor/
 
 # monarbor 本地覆盖
 mona.local.yaml
