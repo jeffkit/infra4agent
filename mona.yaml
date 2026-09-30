@@ -229,9 +229,10 @@ repos:
 - path: plaita-nodes
   name: plaita-nodes
   repo_url: git@github.com:jeffkit/plaita-nodes.git
-  description: plaita 通用节点集（infra 级）：AgentRun（经 agentproc 调 Agent CLI，复用 flowcast
-    的 agents/providers 配置）、Capture、Hitl（直连 hitl-server 微信通道）、Notify、WriteFile。ADR-2026-08-27
-    编排收敛决议的节点承载层，业务粘接节点不放本仓。
+  description: plaita 通用节点集（infra 级，22 节点）：Agent/LLM/决策原子（agentrun 经 agentproc
+    调 Agent CLI，复用 flowcast 的 agents/providers 配置）、流程控制（gate/rate_limit/report/hitl/hitl_await）、
+    出害口（github_comment/git_publish/notify/writefile/parse_json）、凭据化连接器（api_request/generic_webhook/
+    sql_query/email_send + IM webhook×4）。ADR-2026-08-27 编排收敛决议的节点承载层，业务粘接节点不放本仓。
   tech_stack:
   - Python
   - plaita

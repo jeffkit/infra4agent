@@ -145,7 +145,7 @@ flowchart TB
 | `issue-keeper` | Issue Keeper | 监控 issue → screener → agentproc → 写回评论 | 协同工具 |
 | `deepseek-harness` | DeepSeek Harness | 上游 pristine 镜像（master 跟随 upstream，不改源码）；历史 fork 改造封存于 feat/headless-resume，集成物在 `dsh-lavs-integration` 纯插件形态 | Agent 运行时 |
 | `dsh-lavs-integration` | dsh-lavs-integration | DSH 仓外插件集：LAVS host 适配 + 原生右栏视图 tab（纯项目作用域）+ Tasks tab + `lavs` CLI/Skill，经官方 profile+bundle 挂载，零上游改动 | Agent 运行时（DSH 插件） |
-| `plaita-nodes` | plaita-nodes | plaita 通用节点集：AgentRun（经 agentproc）/Capture/Hitl/Notify/WriteFile | 编排插件（节点层） |
+| `plaita-nodes` | plaita-nodes | plaita 通用节点集（22 节点）：Agent/LLM/决策原子（agentrun/llm/decision）· 流程控制（gate/rate_limit/report/hitl/hitl_await）· 出害口（github_comment/git_publish/notify/writefile/parse_json）· 凭据化连接器（api_request/generic_webhook/sql_query/email_send + IM webhook×4） | 编排插件（节点层） |
 | `monarbor` | Monarbor | **本大仓自身的命令行工具**：一个 `mona.yaml` 管全部子仓（list/status/clone/pull/exec/checkout/add）；嵌套大仓递归发现已加固（不跟软链、剪枝依赖目录、深度上限） | 大仓工具（管理本仓自身） |
 
 ---
