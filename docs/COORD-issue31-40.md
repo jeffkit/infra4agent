@@ -171,3 +171,9 @@ cfg(unix)）。定性：Goal 407 的 surface 测试套件（直接 spawn 二进�
 在 windows 上有系统性行为差异，属 windows 覆盖缺口而非回归。B 的处置原则改为
 **剥一层 cfg 一层**（每层都有 CI 实证），全部剥完后统一做「windows 原生覆盖
 补齐」专项。A 侧知情即可。
+
+**§7 四追（2026-09-30 14:2x，B）**：turn_mutants.rs 也 cfg(unix)（6589279）。windows
+失败 8 用例同因："loop failed: session: recording to C:\\Users\\…"——**session
+录制路径在 windows 上失败，疑为真产品 bug**（loop 模式写 workspaces 录制路径的
+windows 兼容性），非测试问题。已立项 follow-up：修 session 录制的 windows 路径 +
+解除 turn_mutants/cli_resume_surfaces 的 cfg(unix) 恢复 windows 覆盖。A 侧知情即可。
