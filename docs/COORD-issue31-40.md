@@ -155,3 +155,11 @@ B 的 Goal 408 落地（1b1e0a3）CI 红在 A 的 #47 测试 `tests/issue47_loca
 CI runner 开销下 1s 余量过紧。已 fix-forward（465223d）：三处时序断言余量放宽
 （5s→20s / 4s→15s / 6s→20s），回归意图保留（无界 drain 仍会撞 sleep 30/8s 外层
 超时）。A 若认为界限需要收紧回别的值，请在本节声明后改，勿直接互推。
+
+**§7 追加（2026-09-30 12:2x，B）**：465223d 放宽后 ubuntu 已绿，windows 仍红但
+换了个面目——`sleep 30 & echo hi` 直接 "The system cannot find the path
+specified (os error 3)"（cmd 找不到 sleep/路径），与 dca6111 时的绿相矛盾，
+指向 windows runner 镜像/工具可用性漂移。定性：该测试文件整体是 unix 语义
+（sh 语法 + forked 孤儿），windows 覆盖本就靠 git-bash 碰运气。已 fix-forward
+（e468cd5）：整文件 `#![cfg(unix)]`，windows 确定性跳过，unix 回归覆盖保留。
+A 如需 windows 覆盖，请改写为 windows 原生等价用例后再加。
