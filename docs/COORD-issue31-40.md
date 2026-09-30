@@ -163,3 +163,11 @@ specified (os error 3)"（cmd 找不到 sleep/路径），与 dca6111 时的绿�
 （sh 语法 + forked 孤儿），windows 覆盖本就靠 git-bash 碰运气。已 fix-forward
 （e468cd5）：整文件 `#![cfg(unix)]`，windows 确定性跳过，unix 回归覆盖保留。
 A 如需 windows 覆盖，请改写为 windows 原生等价用例后再加。
+
+**§7 三追（2026-09-30 13:5x，B）**：cfg(unix) 后 windows 又剥出一层——
+`cli_resume_surfaces.rs::resume_does_not_write_session_out_after_a_clean_finish`
+（stub resume 在 windows 非零退出，--session-out legacy 警告路径，f705760 已
+cfg(unix)）。定性：Goal 407 的 surface 测试套件（直接 spawn 二进制 + stub turn）
+在 windows 上有系统性行为差异，属 windows 覆盖缺口而非回归。B 的处置原则改为
+**剥一层 cfg 一层**（每层都有 CI 实证），全部剥完后统一做「windows 原生覆盖
+补齐」专项。A 侧知情即可。
