@@ -82,6 +82,7 @@ infra4agent/
     ├── ARCHITECTURE.md            # 分层架构与依赖（必读）
     ├── DOC_CODE_MAP.md            # 文档 ↔ 配置映射
     ├── MONARBOR_NOTES.md          # monarbor 软链环崩溃根因与修复记录
+    ├── DOC_ASSERTIONS.yml         # 跨仓「文档↔代码」事实断言表（monarbor doctor 消费）
     ├── LAVS_AGENT_SOP.md          # LAVS View 标准操作流程
     ├── ADR-2026-08-27-orchestration-converge-on-plaita.md  # 编排收敛决议
     ├── ADR-2026-09-06-dsh-pure-plugin-form.md              # DSH×LAVS 纯插件形态决议

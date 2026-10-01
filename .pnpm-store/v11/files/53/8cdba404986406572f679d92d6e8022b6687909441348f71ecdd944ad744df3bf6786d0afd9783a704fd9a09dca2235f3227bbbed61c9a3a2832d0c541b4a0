@@ -1,0 +1,8 @@
+#!/usr/bin/env node
+/**
+ * tunely CLI
+ *
+ * 命令行工具，用于启动隧道客户端
+ */
+export {};
+//# sourceMappingURL=cli.d.ts.map

@@ -1,0 +1,70 @@
+/**
+ * LAVS Script Executor
+ *
+ * Executes script handlers with proper input/output handling and security.
+ */
+import { ScriptHandler, ExecutionContext } from './types';
+export declare class ScriptExecutor {
+    /**
+     * Execute a script handler
+     * @param handler - Script handler configuration
+     * @param input - Input data to pass to script
+     * @param context - Execution context with permissions
+     * @returns Script output (parsed as JSON)
+     */
+    execute(handler: ScriptHandler, input: any, context: ExecutionContext): Promise<any>;
+    /**
+     * Resolve argument templates with input values
+     * Replaces {{path.to.value}} with actual values from input
+     */
+    private resolveArgs;
+    /**
+     * Get value from nested object by dot path
+     * e.g., "user.name" from { user: { name: "Alice" } } => "Alice"
+     * Protects against prototype pollution by blocking __proto__, constructor, prototype keys.
+     */
+    private getValueByPath;
+    /**
+     * Build environment variables for script execution
+     */
+    buildEnvironment(handler: ScriptHandler, input: any, context: ExecutionContext): Record<string, string>;
+    /**
+     * Sensitive environment variable patterns (case-insensitive match).
+     * These keywords in variable names indicate potentially sensitive data.
+     */
+    private static readonly SENSITIVE_PATTERNS;
+    /**
+     * Whitelist of variable names that are safe even if they match sensitive patterns.
+     * For example, LAVS variables or NODE_ENV.
+     */
+    private static readonly SAFE_OVERRIDES;
+    /**
+     * Filter out environment variables that match sensitive patterns.
+     * Variables explicitly declared in handler.env are preserved (they are
+     * intentionally set by the manifest author), but inherited vars from
+     * process.env that match sensitive patterns are removed.
+     *
+     * @param env - Environment variables to filter
+     * @returns Filtered environment variables
+     */
+    filterSensitiveVars(env: Record<string, string>): Record<string, string>;
+    /**
+     * Get base environment variables (filtered for security)
+     * Only include safe variables, exclude sensitive ones
+     */
+    getBaseEnvironment(): Record<string, string>;
+    /**
+     * Convert input object to environment variables
+     * Flattens nested objects with underscore notation
+     */
+    private inputToEnv;
+    /**
+     * Capture stdout/stderr from process and wait for completion
+     */
+    private captureOutput;
+    /**
+     * Parse script output as JSON
+     */
+    private parseOutput;
+}
+//# sourceMappingURL=script-executor.d.ts.map

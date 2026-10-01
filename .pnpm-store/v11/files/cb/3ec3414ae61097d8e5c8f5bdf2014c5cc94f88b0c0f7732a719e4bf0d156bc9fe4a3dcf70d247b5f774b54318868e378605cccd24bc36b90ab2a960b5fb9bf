@@ -1,0 +1,51 @@
+/**
+ * LAVS Tool Generator
+ *
+ * Automatically generates Claude SDK tool definitions from LAVS manifests.
+ * This allows AI agents to call LAVS endpoints as tools.
+ */
+/**
+ * Claude SDK tool definition
+ */
+export interface ClaudeTool {
+    name: string;
+    description: string;
+    input_schema: {
+        type: 'object';
+        properties: Record<string, any>;
+        required?: string[];
+    };
+}
+/**
+ * Tool execution function
+ */
+export type ToolExecutor = (params: any) => Promise<any>;
+/**
+ * Generated tool with executor
+ */
+export interface GeneratedTool {
+    tool: ClaudeTool;
+    execute: ToolExecutor;
+}
+/**
+ * Generate tools from LAVS manifest
+ */
+export declare class LAVSToolGenerator {
+    /**
+     * Generate tools for an agent
+     * @param agentId - Agent ID
+     * @param agentDir - Agent directory path
+     * @param projectPath - Optional project path for data isolation
+     * @returns Array of generated tools
+     */
+    generateTools(agentId: string, agentDir: string, projectPath?: string): Promise<GeneratedTool[]>;
+    /**
+     * Generate tool definition and executor for an endpoint
+     */
+    private generateToolForEndpoint;
+    /**
+     * Check if agent has LAVS
+     */
+    hasLAVS(agentDir: string): Promise<boolean>;
+}
+//# sourceMappingURL=tool-generator.d.ts.map

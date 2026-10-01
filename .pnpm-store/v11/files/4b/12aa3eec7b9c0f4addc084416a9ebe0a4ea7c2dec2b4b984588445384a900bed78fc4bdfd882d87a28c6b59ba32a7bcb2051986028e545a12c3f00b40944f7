@@ -1,0 +1,46 @@
+/**
+ * binary_frames 帧编解码（协议 v2 T2，docs/PROTOCOL_V2.md §1）
+ *
+ * WS binary 帧（仅 tcp_data 一个类型）：
+ *   [0x02]     1B  协议版本标记（v2）
+ *   [0x01]     1B  帧类型：0x01 = tcp_data
+ *   [16B]      conn_id，UUID v4 原始字节（JSON 控制面仍是 36 字符串形式）
+ *   [payload]  原始字节（无 base64、无 JSON、无 sequence——WS 有序，接收侧不依赖）
+ *
+ * tcp_close 保持 JSON（低频、携带 error）。解码遇版本/类型/长度不对抛 Error，
+ * 调用方按畸形帧丢弃（F10 语义）。UUID 转换手写 parse/format，不引第三方依赖。
+ */
+/** 协议版本标记（v2） */
+export declare const FRAME_PROTOCOL_VERSION = 2;
+/** 帧类型：tcp_data */
+export declare const FRAME_TYPE_TCP_DATA = 1;
+/** 帧头长度：1B version + 1B type + 16B conn_id */
+export declare const FRAME_HEADER_LEN = 18;
+/**
+ * UUID 36 字符串 → 16 原始字节。
+ *
+ * 仅做格式校验（长度 + 连字符位置 + hex 字符），不校验版本/变体位——
+ * 与 python `uuid.UUID(...).bytes` 语义一致（任意 16 字节可往返）。
+ * 畸形输入抛 Error。
+ */
+export declare function uuidToBytes(uuid: string): Uint8Array;
+/**
+ * 16 原始字节 → 小写 36 字符 UUID 字符串。长度不对抛 Error。
+ */
+export declare function bytesToUuid(bytes: Uint8Array): string;
+/**
+ * tcp_data 二进制帧编码：0x02 0x01 + UUID 原始字节 + 原始 payload。
+ * conn_id 非 UUID 字符串抛 Error。
+ */
+export declare function encodeTcpDataFrame(connId: string, payload: Uint8Array): Buffer;
+/**
+ * tcp_data 二进制帧解码 → { connId（36 字符串）, payload（原始字节，帧内视图） }。
+ *
+ * 版本/类型/长度不对抛 Error（调用方按畸形帧丢弃，F10 语义）。
+ * 返回的 payload 是入参帧的 subarray 视图（零拷贝）；需长期持有时自行复制。
+ */
+export declare function decodeTcpDataFrame(frame: Uint8Array): {
+    connId: string;
+    payload: Uint8Array;
+};
+//# sourceMappingURL=framing.d.ts.map

@@ -1,0 +1,37 @@
+/**
+ * LAVS Manifest Loader
+ *
+ * Loads and validates lavs.json configuration files.
+ */
+import { LAVSManifest } from './types';
+export declare class ManifestLoader {
+    /**
+     * Load LAVS manifest from file
+     * @param manifestPath - Path to lavs.json
+     * @returns Parsed and validated manifest with resolved paths
+     */
+    load(manifestPath: string): Promise<LAVSManifest>;
+    /**
+     * Validate manifest structure and required fields
+     */
+    private validateManifest;
+    /**
+     * Validate individual endpoint definition
+     */
+    private validateEndpoint;
+    /**
+     * Validate handler configuration
+     */
+    private validateHandler;
+    /**
+     * Resolve relative paths in manifest to absolute paths
+     * This makes the manifest portable and allows scripts to use relative paths
+     */
+    private resolvePaths;
+    /**
+     * Check if a command looks like a relative script path
+     * e.g., "scripts/handler.js", "./handler.py", "handler.sh"
+     */
+    private isRelativeScriptPath;
+}
+//# sourceMappingURL=loader.d.ts.map

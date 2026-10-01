@@ -1,0 +1,106 @@
+/**
+ * LAVS Subscription Manager
+ *
+ * Manages real-time subscriptions for LAVS endpoints.
+ * Uses Server-Sent Events (SSE) as the transport layer.
+ *
+ * Protocol flow:
+ * 1. Client opens SSE connection: GET /api/agents/:agentId/lavs/:endpoint/subscribe
+ * 2. Server sends events when data changes
+ * 3. Client or server can close the connection
+ */
+/**
+ * Minimal writable response interface for SSE.
+ * Compatible with express.Response, http.ServerResponse, etc.
+ */
+export interface SSEResponse {
+    writeHead(statusCode: number, headers: Record<string, string>): void;
+    write(chunk: string): boolean;
+    end(): void;
+    on(event: string, listener: (...args: any[]) => void): void;
+    writableEnded: boolean;
+}
+/**
+ * Event data to push to subscribers
+ */
+export interface SubscriptionEvent {
+    type: string;
+    data?: unknown;
+    timestamp?: string;
+}
+/**
+ * Configuration for the subscription manager
+ */
+interface SubscriptionManagerOptions {
+    /** Maximum number of concurrent subscriptions (default: 100) */
+    maxSubscriptions?: number;
+    /** Heartbeat interval in ms to keep connections alive (default: 30000) */
+    heartbeatIntervalMs?: number;
+}
+/**
+ * LAVS Subscription Manager - manages SSE-based subscriptions
+ */
+export declare class SubscriptionManager {
+    private subscriptions;
+    private readonly maxSubscriptions;
+    private heartbeatTimer;
+    constructor(options?: SubscriptionManagerOptions);
+    /**
+     * Send heartbeat to all subscriptions. Removes stale connections.
+     */
+    private sendHeartbeats;
+    /**
+     * Stop the heartbeat timer (for graceful shutdown / tests)
+     */
+    destroy(): void;
+    /**
+     * Create a new subscription.
+     *
+     * @param agentId - Agent identifier
+     * @param endpointId - Endpoint identifier (must be a subscription endpoint)
+     * @param res - Express response object (will be held open for SSE)
+     * @returns Subscription ID
+     * @throws Error if max subscriptions limit is reached
+     */
+    subscribe(agentId: string, endpointId: string, res: SSEResponse): string;
+    /**
+     * Remove a subscription
+     */
+    unsubscribe(subscriptionId: string): boolean;
+    /**
+     * Push an event to all subscribers of a specific agent+endpoint.
+     *
+     * @param agentId - Agent identifier
+     * @param endpointId - Endpoint identifier
+     * @param event - Event data to push
+     * @returns Number of subscribers notified
+     */
+    publish(agentId: string, endpointId: string, event: SubscriptionEvent): number;
+    /**
+     * Push an event to all subscribers of a specific agent (any endpoint).
+     *
+     * @param agentId - Agent identifier
+     * @param event - Event data to push
+     * @returns Number of subscribers notified
+     */
+    publishToAgent(agentId: string, event: SubscriptionEvent): number;
+    /**
+     * Get count of active subscriptions
+     */
+    getActiveCount(): number;
+    /**
+     * Get active subscriptions for an agent
+     */
+    getSubscriptionsForAgent(agentId: string): {
+        id: string;
+        endpointId: string;
+        createdAt: number;
+    }[];
+    /**
+     * Send an SSE event to a response stream
+     */
+    private sendSSE;
+}
+export declare const subscriptionManager: SubscriptionManager;
+export {};
+//# sourceMappingURL=subscription-manager.d.ts.map

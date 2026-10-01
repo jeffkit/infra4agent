@@ -1,0 +1,12 @@
+/**
+ * WS-Tunnel wire 协议 conformance 测试
+ *
+ * 与 Python 服务端（uvicorn / websockets + pydantic）对齐线上 JSON 形状：
+ * - 每个消息类型：从服务端风格的 compact JSON 字符串 parse，断言关键字段；
+ * - 序列化 roundtrip：JSON.stringify → parseMessage 深度相等（键名与取值不变）；
+ * - 未知类型容错：parse 不抛异常，type 字段原样保留、可与已知类型区分。
+ *
+ * 硬约束：线上 JSON 键名与取值必须与 Python 服务端 pydantic 模型兼容。
+ */
+export {};
+//# sourceMappingURL=protocol.conformance.test.d.ts.map

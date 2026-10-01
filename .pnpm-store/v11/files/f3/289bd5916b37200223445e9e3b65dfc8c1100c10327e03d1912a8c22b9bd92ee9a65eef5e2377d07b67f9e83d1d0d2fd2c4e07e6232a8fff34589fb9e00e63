@@ -1,0 +1,16 @@
+#!/usr/bin/env node
+/**
+ * LAVS Runtime CLI
+ *
+ * Starts a standard MCP server for a LAVS-enabled agent directory.
+ *
+ * Usage:
+ *   npx lavs-runtime serve --agent-dir ./agents/jarvis [--agent-id jarvis] [--project-path /path/to/project]
+ *
+ * This allows any MCP-compatible client to connect via stdio:
+ *   - Claude Code: configure in .claude/mcp.json
+ *   - Cursor: configure in .cursor/mcp.json
+ *   - Any MCP client supporting stdio transport
+ */
+export {};
+//# sourceMappingURL=cli.d.ts.map

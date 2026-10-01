@@ -249,3 +249,48 @@
 10. 根 .gitignore/.zcode 策略二选一（要么接受 skills 不入库并改注释、要么 `!.zcode/skills/` 保留追踪）。
 11. 已可关闭的 ARCHITECTURE §8 张力项：§8.4（email-bridge）、§8.6（file: 依赖）、§8.9（hub-bridge 并存）改写为现状描述。
 12. 各仓「文档缺口」按需补齐（ilink-hub relay/MCP、recursive ACP/WeChat、im-agentproc 四通道指南入口、lavs host/daemon、web-bridge shell/CDP 等）。
+
+## 六、修复落地记录（2026-10-01，当日完成）
+
+文档侧可修项已全部修复并提交（各子仓独立提交，`docs:` 前缀；deepseek-harness 保持 pristine 未动一字）：
+
+| 仓 | 提交 | 摘要 |
+|----|------|------|
+| agentproc | 10e342b | wire 0.4 / 三 SDK 口径统一（AGENTS/README/CHANGELOG） |
+| ilink-hub | 629ec0b | 目录树去 bridge/、MySQL 口径、CI 步骤名、README 架构树 |
+| im-agentproc | e87dbd5 | 五通道叙事（README/Cargo/AGENTS/docs+zh/index/lib.rs doc）、~/.ilink-hub 路径 |
+| hil-mcp | f36e1bd | 五引擎、uvx hitl-mcp、HIL_* env、packaging/ 幽灵清除 |
+| flowcast | bb8ab82 | adapters.js→executor/、真实依赖与命令、模块地图、@hitl 注释 |
+| web-bridge | 9c7a942 | CDP attach 双层表述、npm start/dev、wb_recipes、shell/plugin 命令、目录树 |
+| issue-keeper | c764b62 | --from 移除、264 用例、四张表、三种后端、.mcp.json 幽灵清除 |
+| argusai-marketplace | d4a83a5 | 工具清单 11→23 |
+| browser-bridge | f9c7b88 | 21 项单测、v0.3.2 口径、gateway call |
+| tunely | 00a8e0e | rust --config 已支持、0.12 虚假版本归属清除 |
+| monarbor | ac5edbb | pipx 本仓路径安装指引、local 组与常用 flags |
+| agently-mail-client | 906eea7 | CHANGELOG 0.2.0 定版、marked 版本、AGENTS 24 模块清单 |
+| recursive-providers | 6c65367 | opt-in 拉取、直推 main、LICENSE 诚实注记 |
+| dsh-lavs-integration | 7381a8a | package.json description 与组成表对齐 |
+| 大仓根 | 4389233 | mona.yaml 三处、ARCHITECTURE 单轨/张力/依赖边、README/AGENTS、.gitignore(.zcode/skills 入库)、DOC_CODE_MAP、LAVS_SOP、ADR-0816/0906、本审计报告 |
+| plaita / mediaflow / plaita-nodes | 未提交 | 修复已叠加在工作树（与既有未提交 WIP 同方向），待 owner 随 WIP 一并提交 |
+
+**审计自纠**：hil-mcp「API 路径过期」经修复员以 admin.py:28 router prefix 证据推翻，已撤回（`/admin/api/` 为真实路径）。
+**转交代码侧的问题（文档无法修复）**：
+1. hil-mcp `mcp-server-ts` 的 telegram/discord/feishu 三客户端请求无 `/admin` 前缀的 `/api/engines/<type>/start`，服务端该路径仅 wecom-aibot 存在（handlers/api.py:308）——三引擎管理台启动可能 404。
+2. ilink-hub `src/main.rs:43` doc 注释仍以 `mysql://` 为示例 URL（运行期不支持 MySQL）。
+3. agently-mail-client `src/constants.js:7` 注释仍提 spawnSync（实际已 spawn+Promise）。
+4. tunely `server.py:91` 注释与测试 docstring 仍提「0.12」。
+5. argusai-marketplace plugin.json `repository` 指向大仓而非分发仓（owner 元数据决策）。
+6. recursive-providers 声称 CC0 但无 LICENSE 文件。
+7. 大仓根散落物：docs/keeper-upgrade-A-session.patch / .zcodeignore / .pnpm-store 未清理未入库。
+
+## 七、防漂移机制落地（2026-10-01，同日完成）
+
+按「机器管事实层、AI 审计管叙事层」的分层设计，第一批机制已落地：
+
+| 落地物 | 位置 | 说明 |
+|--------|------|------|
+| 事实断言表 | `docs/DOC_ASSERTIONS.yml` | 47 条机器可校验的跨仓事实（本次审计沉淀）：清单行数、依赖声明与版本锚、注册表计数（引擎/Transport/工具/节点）、过时表述零残留、引用路径存在性 |
+| `monarbor doctor` | 子仓 `monarbor/`（cli.py + doctor.py + tests/test_doctor.py，16 个单测） | 读断言表逐条校验，失败退出码 1；`--json` 供 CI。**当前 47/47 通过**。12 种 check 类型：file_exists / glob_min / regex_count / regex_contains(_all) / regex_not_contains / dep_present（npm/pyp/cargo，含 git-pin 拒绝）/ entry_points_count / mona_paths_gitignored / table_rows_matches_mona / backtick_paths_exist |
+| 文档断言测试 | `hil-mcp/tests/test_docs_claims.py`（5 用例）、`argusai/packages/mcp/tests/unit/docs-claims.test.ts`（3 用例）、`im-agentproc/tests/doc_claims.rs`（4 用例，纯 std） | 各仓把「文档声称 == 代码实际」固化进测试：改引擎/Transport/工具清单而不同步文档时测试变红 |
+
+后续节奏：改跨仓依赖边或文档计数 → 跑 `monarbor doctor`；叙事层漂移 → 按月跑 doc-audit skill（模板 = 本报告的 12 组审计任务，待固化为 `.zcode/skills/doc-audit`）。

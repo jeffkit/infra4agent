@@ -1,0 +1,324 @@
+# 文档 ↔ 代码 跨仓事实断言表
+#
+# 来源：2026-10-01 全仓「文档↔代码」审计（docs/DOC_CODE_AUDIT-2026-10-01.md），
+# 把其中机器可校验的跨仓事实沉淀于此，由 `monarbor doctor` 逐条执行：
+#
+#     monarbor doctor            # 在大仓根运行；失败即漂移，退出码 1
+#     monarbor doctor --json     # CI 消费
+#
+# 维护约定（对应 ARCHITECTURE §9）：
+#   * 改跨仓依赖边 / 改文档声称的计数 / 修复某条漂移时，同步更新本表；
+#   * 每条断言 id = <repo>/<claim>，desc 写"人话"，方便失败时定位；
+#   * 只放「机器可校验」的事实；叙事类漂移走 .zcode/skills/doc-audit 周期审计。
+
+version: 1
+
+assertions:
+
+  # ── 大仓根 ────────────────────────────────────────────────
+  - id: root/mona-gitignore-aligned
+    desc: '.gitignore 覆盖 mona.yaml 全部子仓 path'
+    check: mona_paths_gitignored
+
+  - id: root/readme-repo-table-matches-mona
+    desc: 'README 子仓表行数 == mona.yaml repos 数'
+    check: table_rows_matches_mona
+    file: README.md
+    pattern: '^\| \['
+
+  - id: root/architecture-table-matches-mona
+    desc: 'ARCHITECTURE §3 表行数 == mona.yaml repos 数'
+    check: table_rows_matches_mona
+    file: docs/ARCHITECTURE.md
+    pattern: '^\| `[a-z0-9-]+` \|[^|\n]+\|[^|\n]+\|'
+
+  - id: root/readme-no-stale-list-crash
+    desc: 'README 不再声称 monarbor list 必然崩溃（已修复）'
+    check: regex_not_contains
+    file: README.md
+    pattern: 必然崩溃
+
+  - id: root/readme-pipx-bootstrap
+    desc: 'README 快速开始用 pipx 从子仓路径安装修复版 monarbor'
+    check: regex_contains
+    file: README.md
+    pattern: pipx install \./monarbor
+
+  - id: root/agents-mail-repo-name
+    desc: 'AGENTS.md 使用真实子仓名 agently-mail-client'
+    check: regex_contains
+    file: AGENTS.md
+    pattern: agently-mail-client
+
+  - id: root/agents-no-future-transports
+    desc: 'AGENTS.md 不再说 im-agentproc「未来扩展飞书/Telegram」（五通道已实现）'
+    check: regex_not_contains
+    file: AGENTS.md
+    pattern: 未来经 .?Transport
+
+  - id: root/mona-no-stale-descriptions
+    desc: 'mona.yaml 无三处已知过时描述（试点迁移/未来通道/自动化分支）'
+    check: regex_not_contains
+    file: mona.yaml
+    pattern: 试点迁移|未来经 Transport|分支由自动化维护
+
+  - id: root/gitignore-tracks-zcode-skills
+    desc: '.gitignore 反选保留 .zcode/skills（与注释意图一致）'
+    check: regex_contains
+    file: .gitignore
+    pattern: '!\.zcode/skills/'
+
+  - id: root/docmap-paths-exist
+    desc: 'DOC_CODE_MAP.md 引用的代码路径全部存在'
+    check: backtick_paths_exist
+    file: docs/DOC_CODE_MAP.md
+    allow:
+      - .lavs/bundles/
+
+  - id: root/bundles-lavs-json
+    desc: '大仓根 bundles/ 至少 2 个 LAVS bundle'
+    check: glob_min
+    path: bundles
+    pattern: '*/lavs.json'
+    min: 2
+
+  # ── 共享协议 agentproc ────────────────────────────────────
+  - id: agentproc/wire-0_4-in-spec
+    desc: 'spec 的 wire protocol 与三 SDK 代码一致为 0.4'
+    check: regex_contains
+    file: agentproc/spec/protocol.md
+    pattern: '\*\*Wire protocol:\*\* `0\.4`'
+
+  - id: agentproc/hub-profiles-complete
+    desc: 'hub/ 至少 16 个 profile 均带 profile.yaml'
+    check: glob_min
+    path: agentproc/hub
+    pattern: '*/profile.yaml'
+    min: 16
+
+  - id: agentproc/conformance-suite
+    desc: 'spec/conformance 一致性套件存在'
+    check: file_exists
+    path: agentproc/spec/conformance/cases.json
+
+  # ── 通道 ─────────────────────────────────────────────────
+  - id: im-agentproc/five-transports-registered
+    desc: 'registry 注册 iLink/Telegram/WeCom/飞书/Discord 五个 Transport'
+    check: regex_contains_all
+    file: im-agentproc/src/bridge/transport/registry.rs
+    patterns: ['ilink', 'telegram', 'wecom', 'feishu', 'discord']
+
+  - id: im-agentproc/readme-no-only-ilink
+    desc: 'README 不再有「iLink is the only real adapter」旧叙事'
+    check: regex_not_contains
+    file: im-agentproc/README.md
+    pattern: only real adapter
+
+  - id: im-agentproc/agentproc-crate-registry-pin
+    desc: 'Cargo 依赖 agentproc ~0.11 且来自 crates.io（非 git/path pin）'
+    check: dep_present
+    file: im-agentproc/Cargo.toml
+    ecosystem: cargo
+    name: agentproc
+    version: '0\.11'
+    no_git_pin: true
+
+  - id: hil-mcp/five-engines
+    desc: 'builtin.py 恰有 5 个内置 HITL 引擎'
+    check: regex_count
+    file: hil-mcp/packages/hitl-server/hitl_server/engines/builtin.py
+    pattern: 'EngineDescriptor\('
+    equals: 5
+
+  - id: hil-mcp/py-package-name-hitl-mcp
+    desc: 'PyPI 包名是 hitl-mcp（不是 hil-mcp）'
+    check: regex_contains
+    file: hil-mcp/packages/mcp-server-py/pyproject.toml
+    pattern: '^name = "hitl-mcp"'
+
+  - id: hil-mcp/readme-no-uvx-hil
+    desc: 'README 不再出现装不到的 `uvx hil-mcp`'
+    check: regex_not_contains
+    file: hil-mcp/README.md
+    pattern: uvx hil-mcp
+
+  - id: hil-mcp/agents-no-uvx-hil
+    desc: 'AGENTS.md 不再出现 `uvx hil-mcp`'
+    check: regex_not_contains
+    file: hil-mcp/AGENTS.md
+    pattern: uvx hil-mcp
+
+  - id: ilink-hub/cargo-no-bridge-bin
+    desc: 'ilink-hub 0.4.0 起 hub-only（Cargo 无 bridge bin）'
+    check: regex_not_contains
+    file: ilink-hub/Cargo.toml
+    pattern: ilink-hub-bridge
+
+  - id: agently-mail/dispatcher-exists
+    desc: 'ARCHITECTURE §4.1 引用的 src/dispatcher.js 存在'
+    check: file_exists
+    path: agently-mail-client/src/dispatcher.js
+
+  - id: agently-mail/agentproc-dep-pin
+    desc: 'mail-client 对 agentproc 的 npm 锁定版本（版本分裂张力的观测点）'
+    check: dep_present
+    file: agently-mail-client/package.json
+    ecosystem: npm
+    name: agentproc
+    version: '\^0\.1\.1'
+
+  # ── 运行时 ───────────────────────────────────────────────
+  - id: recursive-providers/providers-json
+    desc: '单一事实源 providers.json 存在'
+    check: file_exists
+    path: recursive-providers/providers.json
+
+  - id: recursive/providers-auto-refresh-optin
+    desc: 'providers 自动刷新需 RECURSIVE_PROVIDERS_AUTO_REFRESH=1（README 已如实标注）'
+    check: regex_contains
+    file: recursive/src/providers_cache.rs
+    pattern: RECURSIVE_PROVIDERS_AUTO_REFRESH
+
+  - id: recursive/e2e-argusai-registry-dep
+    desc: 'recursive e2e 用 registry 语义版本依赖 argusai-core（file: 相对布局已移除）'
+    check: regex_contains
+    file: recursive/e2e/plugins/package.json
+    pattern: '"argusai-core"\s*:\s*"\^'
+
+  - id: dsh-lavs/dsh-version-pin
+    desc: 'dsh-lavs-integration 精确锚定 DSH 0.1.7-rc.2'
+    check: regex_contains
+    file: dsh-lavs-integration/package.json
+    pattern: 0\.1\.7-rc\.2
+
+  - id: dsh-lavs/cordis-patch-exists
+    desc: 'ARCHITECTURE §4.1 引用的 cordis.patch.yml 存在'
+    check: file_exists
+    path: dsh-lavs-integration/bundles/lavs/cordis.patch.yml
+
+  # ── 编排 ─────────────────────────────────────────────────
+  - id: plaita-nodes/entry-points-22
+    desc: 'plaita-nodes 恰有 22 个节点（与 mona.yaml/ARCHITECTURE 声称一致）'
+    check: entry_points_count
+    file: plaita-nodes/pyproject.toml
+    group: plaita.nodes
+    equals: 22
+
+  - id: plaita-nodes/depends-plaita-0_5
+    desc: 'plaita-nodes 依赖 plaita>=0.5.0'
+    check: dep_present
+    file: plaita-nodes/pyproject.toml
+    ecosystem: pyp
+    name: plaita
+    version: '>=0\.5\.0'
+
+  - id: plaita-nodes/depends-agentproc-0_15
+    desc: 'plaita-nodes 依赖 agentproc>=0.15.0（Python SDK）'
+    check: dep_present
+    file: plaita-nodes/pyproject.toml
+    ecosystem: pyp
+    name: agentproc
+    version: '>=0\.15\.0'
+
+  - id: plaita-nodes/agentrun-uses-agentproc
+    desc: 'agentrun 经 agentproc SDK 调 Agent CLI（ARCHITECTURE §4.1 证据）'
+    check: regex_contains
+    file: plaita-nodes/src/plaita_nodes/agent_run.py
+    pattern: agentproc
+
+  - id: flowcast/agentproc-dep
+    desc: 'flowcast 的 agentproc npm 锁定版本（版本分裂张力的观测点）'
+    check: dep_present
+    file: flowcast/package.json
+    ecosystem: npm
+    name: agentproc
+    version: '\^0\.10'
+
+  - id: mediaflow/flowcast-file-dep
+    desc: 'mediaflow 以 file:../flowcast 依赖 flowcast'
+    check: dep_present
+    file: mediaflow/package.json
+    ecosystem: npm
+    name: flowcast
+    version: 'file:\.\./flowcast'
+
+  - id: mediaflow/plaita-flows-eight
+    desc: 'mediaflow 8 条业务 flow 已全量迁移 plaita（plaita_flows/flows/）'
+    check: glob_min
+    path: mediaflow/plaita_flows/flows
+    pattern: '*.flow'
+    min: 8
+
+  # ── 测试 / 分发 ───────────────────────────────────────────
+  - id: argusai-mcp/tool-handler-imports-22
+    desc: 'argusai-mcp server.ts 导入 22 个工具模块（run.ts 导出 run+run_suite = 23 工具）'
+    check: regex_count
+    file: argusai/packages/mcp/src/server.ts
+    pattern: '^import \{[^}]*handle'
+    equals: 22
+
+  - id: argusai/readme-23-tools
+    desc: 'argusai 根 README 声称 23 个 MCP 工具'
+    check: regex_contains
+    file: argusai/README.md
+    pattern: 23 个工具
+
+  - id: marketplace/mcp-json-npx-argusai
+    desc: 'marketplace 经 npx argusai-mcp 拉起（ARCHITECTURE §4.1 依赖边）'
+    check: regex_contains
+    file: argusai-marketplace/argusai/.mcp.json
+    pattern: argusai-mcp
+
+  - id: marketplace/readme-23-not-11
+    desc: 'marketplace README 工具清单已从 11 更新为 23'
+    check: regex_contains
+    file: argusai-marketplace/README.md
+    pattern: 23 个
+
+  # ── 协同 ─────────────────────────────────────────────────
+  - id: issue-keeper/agentproc-spawn-cli
+    desc: 'issue-keeper 主链路 spawn agentproc CLI（非 Python 包依赖）'
+    check: regex_contains
+    file: issue-keeper/issue_keeper/profile.py
+    pattern: AGENTPROC_BIN
+
+  - id: issue-keeper/screener-flow-backend
+    desc: 'screener backend=flow 的 console 拉取实现（X-Admin-API-Key）'
+    check: regex_contains
+    file: issue-keeper/issue_keeper/screener.py
+    pattern: X-Admin-API-Key
+
+  # ── 大仓工具 ─────────────────────────────────────────────
+  - id: monarbor/scan-safety-regression-8
+    desc: '软链环加固恰有 8 个回归测试（MONARBOR_NOTES 口径）'
+    check: regex_count
+    file: monarbor/tests/test_nested_scan_safety.py
+    pattern: '^def test_'
+    equals: 8
+
+  - id: monarbor/version-0_4_0
+    desc: 'monarbor 版本 0.4.0（修复基线，MONARBOR_NOTES 口径）'
+    check: regex_contains
+    file: monarbor/pyproject.toml
+    pattern: '^version = "0\.4\.0"'
+
+  # ── 隧道 ─────────────────────────────────────────────────
+  - id: tunely/deploy-9080-dsh
+    desc: 'crypto 部署 9080 出口固定转发 dsh 隧道（ARCHITECTURE 要点 9）'
+    check: regex_contains
+    file: tunely/docker-compose.yml
+    pattern: 9080:dsh
+
+  # ── 视图 ─────────────────────────────────────────────────
+  - id: lavs/official-bundles-four
+    desc: 'lavs 仓维护 4 个官方 bundle（REGISTRY 口径）'
+    check: glob_min
+    path: lavs/bundles
+    pattern: '*/lavs.json'
+    min: 4
+
+  - id: lavs/registry-no-phantom-install
+    desc: 'REGISTRY 不再有幽灵命令 `lavs install`'
+    check: regex_not_contains
+    file: lavs/REGISTRY.md
+    pattern: '`lavs install`'

@@ -1,0 +1,171 @@
+/**
+ * LAVS (Local Agent View Service) Type Definitions
+ *
+ * This file defines the TypeScript types for LAVS manifests and related interfaces.
+ * See docs/LAVS-SPEC.md for full specification.
+ */
+/**
+ * LAVS Manifest - defines agent's data interface and view configuration
+ */
+export interface LAVSManifest {
+    lavs: string;
+    name: string;
+    version: string;
+    description?: string;
+    endpoints: Endpoint[];
+    view?: ViewConfig;
+    types?: TypeDefinitions;
+    permissions?: Permissions;
+}
+/**
+ * Endpoint - a callable operation exposed by the service
+ */
+export interface Endpoint {
+    id: string;
+    method: 'query' | 'mutation' | 'subscription';
+    description?: string;
+    handler: Handler;
+    schema?: Schema;
+    permissions?: Permissions;
+}
+/**
+ * Handler - defines how to execute an endpoint
+ */
+export type Handler = ScriptHandler | FunctionHandler | HTTPHandler | MCPHandler;
+/**
+ * Script Handler - executes a script/command
+ */
+export interface ScriptHandler {
+    type: 'script';
+    command: string;
+    args?: string[];
+    input?: 'args' | 'stdin' | 'env';
+    cwd?: string;
+    timeout?: number;
+    env?: Record<string, string>;
+}
+/**
+ * Function Handler - calls a JavaScript/TypeScript function
+ */
+export interface FunctionHandler {
+    type: 'function';
+    module: string;
+    function: string;
+}
+/**
+ * HTTP Handler - proxies to HTTP endpoint
+ */
+export interface HTTPHandler {
+    type: 'http';
+    url: string;
+    method: string;
+    headers?: Record<string, string>;
+}
+/**
+ * MCP Handler - bridges to MCP server tool
+ */
+export interface MCPHandler {
+    type: 'mcp';
+    server: string;
+    tool: string;
+}
+/**
+ * Schema - JSON Schema for input/output validation
+ */
+export interface Schema {
+    input?: JSONSchema;
+    output?: JSONSchema;
+}
+/**
+ * JSON Schema type (simplified)
+ */
+export type JSONSchema = Record<string, any>;
+/**
+ * Type Definitions - reusable type schemas
+ */
+export type TypeDefinitions = Record<string, JSONSchema>;
+/**
+ * View Configuration - UI component definition
+ */
+export interface ViewConfig {
+    component: ComponentSource;
+    fallback?: 'list' | 'table' | 'json';
+    icon?: string;
+    theme?: Record<string, string>;
+}
+/**
+ * Component Source - how to load the view component
+ */
+export type ComponentSource = {
+    type: 'cdn';
+    url: string;
+    exportName?: string;
+} | {
+    type: 'npm';
+    package: string;
+    version?: string;
+} | {
+    type: 'local';
+    path: string;
+} | {
+    type: 'inline';
+    code: string;
+};
+/**
+ * Permissions - security constraints
+ *
+ * Enforcement levels:
+ * - ENFORCED: Runtime actively prevents violations
+ * - ADVISORY: Declared for documentation/auditing, not enforced at OS level
+ *
+ * | Permission       | Enforcement | Notes                                          |
+ * |-----------------|-------------|------------------------------------------------|
+ * | fileAccess      | ADVISORY    | Glob patterns for allowed paths; checked at     |
+ * |                 |             | handler dispatch (path traversal) but not at    |
+ * |                 |             | OS/syscall level during script execution        |
+ * | networkAccess   | ADVISORY    | Declared intent; not enforced (no network       |
+ * |                 |             | namespacing). Use OS-level isolation for strict  |
+ * |                 |             | enforcement (e.g., nsjail, Docker)               |
+ * | maxExecutionTime| ENFORCED    | Script killed via SIGTERM/SIGKILL on timeout    |
+ * | maxMemory       | ADVISORY    | Not enforced in current runtime; future: use    |
+ * |                 |             | Node.js child_process resource limits           |
+ */
+export interface Permissions {
+    fileAccess?: string[];
+    networkAccess?: boolean | string[];
+    maxExecutionTime?: number;
+    maxMemory?: number;
+}
+/**
+ * Execution Context - runtime context for handler execution
+ */
+export interface ExecutionContext {
+    endpointId: string;
+    agentId: string;
+    workdir: string;
+    permissions: Permissions;
+    timeout?: number;
+    env?: Record<string, string>;
+}
+/**
+ * LAVS Error - standard error format
+ */
+export declare class LAVSError extends Error {
+    code: number;
+    data?: Record<string, unknown> | undefined;
+    constructor(code: number, message: string, data?: Record<string, unknown> | undefined);
+}
+/**
+ * LAVS Error Codes (JSON-RPC 2.0 compatible)
+ */
+export declare enum LAVSErrorCode {
+    ParseError = -32700,
+    InvalidRequest = -32600,
+    MethodNotFound = -32601,
+    InvalidParams = -32602,
+    InternalError = -32603,
+    PermissionDenied = -32001,
+    Timeout = -32002,
+    HandlerError = -32003
+}
+//# sourceMappingURL=types.d.ts.map

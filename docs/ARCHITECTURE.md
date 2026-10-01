@@ -329,6 +329,7 @@ flowchart LR
 
 - 子仓增删：先改 `mona.yaml` 与 `.gitignore`，再更新本文 §3 / §4。
 - 依赖变化：以包声明与运行时调用为准更新 §4；纯 README 提及放 §4.3。
+- 防漂移：改跨仓依赖边 / 文档声称的计数后，在大仓根跑 `monarbor doctor`（断言表见 `docs/DOC_ASSERTIONS.yml`）；叙事层漂移按月跑 `.zcode/skills/doc-audit` 周期审计（模板沉淀自 2026-10-01 全仓审计，见 `docs/DOC_CODE_AUDIT-2026-10-01.md`）。
 - 各子仓内部架构：写在子仓自己的 `ARCHITECTURE.md` / `AGENTS.md`，本文不重复。
 
 相关文件：

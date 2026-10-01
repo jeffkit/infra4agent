@@ -1,0 +1,75 @@
+"use strict";
+/**
+ * WS-Tunnel 协议定义
+ *
+ * 协议版本: 2.0（能力协商 + binary_frames + chunked_http）
+ */
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.CLIENT_CAPABILITIES = exports.MessageType = void 0;
+exports.createAuthMessage = createAuthMessage;
+exports.createPongMessage = createPongMessage;
+exports.createResponse = createResponse;
+exports.parseMessage = parseMessage;
+const version_1 = require("./version");
+var MessageType;
+(function (MessageType) {
+    // 认证
+    MessageType["AUTH"] = "auth";
+    MessageType["AUTH_OK"] = "auth_ok";
+    MessageType["AUTH_ERROR"] = "auth_error";
+    // 请求-响应
+    MessageType["REQUEST"] = "request";
+    MessageType["RESPONSE"] = "response";
+    // 流式响应（SSE 支持）
+    MessageType["STREAM_START"] = "stream_start";
+    MessageType["STREAM_CHUNK"] = "stream_chunk";
+    MessageType["STREAM_END"] = "stream_end";
+    // TCP 模式
+    MessageType["TCP_CONNECT"] = "tcp_connect";
+    MessageType["TCP_DATA"] = "tcp_data";
+    MessageType["TCP_CLOSE"] = "tcp_close";
+    // 心跳
+    MessageType["PING"] = "ping";
+    MessageType["PONG"] = "pong";
+})(MessageType || (exports.MessageType = MessageType = {}));
+// ============== 辅助函数 ==============
+/**
+ * 本客户端已实现并声明的能力（协议 v2 能力协商）。
+ * 铁律：只许声明已实现的能力（声明了没实现 = 服务端会用而客户端解析不了 = 事故）。
+ * T2 起实现 binary_frames；T3 起实现 chunked_http（非 SSE 大响应流式回传）。
+ * 新能力实现后在此追加。
+ */
+exports.CLIENT_CAPABILITIES = ['binary_frames', 'chunked_http'];
+function createAuthMessage(token, force = false, capabilities = exports.CLIENT_CAPABILITIES) {
+    return {
+        type: MessageType.AUTH,
+        token,
+        // 真实版本上报（服务端 /api/tunnels 用于升级核对）；历史版本硬编码 '0.1.0' 是假值
+        client_version: version_1.CLIENT_VERSION,
+        force,
+        capabilities,
+    };
+}
+function createPongMessage() {
+    return {
+        type: MessageType.PONG,
+        timestamp: new Date().toISOString(),
+    };
+}
+function createResponse(requestId, status, body, headers, error, durationMs) {
+    return {
+        type: MessageType.RESPONSE,
+        id: requestId,
+        status,
+        headers: headers || {},
+        body,
+        error,
+        duration_ms: durationMs,
+        timestamp: new Date().toISOString(),
+    };
+}
+function parseMessage(data) {
+    const obj = JSON.parse(data);
+    return obj;
+}
+//# sourceMappingURL=protocol.js.map

@@ -1,0 +1,26 @@
+/**
+ * LAVS Function Executor
+ *
+ * Executes function handlers by dynamically importing JS/TS modules
+ * and calling exported functions.
+ */
+import { FunctionHandler, ExecutionContext } from './types';
+/**
+ * LAVS Function Executor - executes function handlers from JS modules
+ */
+export declare class FunctionExecutor {
+    /**
+     * Execute a function handler
+     *
+     * @param handler - Function handler configuration (module path + function name)
+     * @param input - Input data to pass to the function
+     * @param context - Execution context with permissions
+     * @returns Function return value
+     */
+    execute(handler: FunctionHandler, input: unknown, context: ExecutionContext): Promise<unknown>;
+    /**
+     * Execute a function with a timeout
+     */
+    private executeWithTimeout;
+}
+//# sourceMappingURL=function-executor.d.ts.map

@@ -1,0 +1,38 @@
+"use strict";
+/**
+ * LAVS (Local Agent View Service) Type Definitions
+ *
+ * This file defines the TypeScript types for LAVS manifests and related interfaces.
+ * See docs/LAVS-SPEC.md for full specification.
+ */
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.LAVSErrorCode = exports.LAVSError = void 0;
+/**
+ * LAVS Error - standard error format
+ */
+class LAVSError extends Error {
+    code;
+    data;
+    constructor(code, message, data) {
+        super(message);
+        this.code = code;
+        this.data = data;
+        this.name = 'LAVSError';
+    }
+}
+exports.LAVSError = LAVSError;
+/**
+ * LAVS Error Codes (JSON-RPC 2.0 compatible)
+ */
+var LAVSErrorCode;
+(function (LAVSErrorCode) {
+    LAVSErrorCode[LAVSErrorCode["ParseError"] = -32700] = "ParseError";
+    LAVSErrorCode[LAVSErrorCode["InvalidRequest"] = -32600] = "InvalidRequest";
+    LAVSErrorCode[LAVSErrorCode["MethodNotFound"] = -32601] = "MethodNotFound";
+    LAVSErrorCode[LAVSErrorCode["InvalidParams"] = -32602] = "InvalidParams";
+    LAVSErrorCode[LAVSErrorCode["InternalError"] = -32603] = "InternalError";
+    LAVSErrorCode[LAVSErrorCode["PermissionDenied"] = -32001] = "PermissionDenied";
+    LAVSErrorCode[LAVSErrorCode["Timeout"] = -32002] = "Timeout";
+    LAVSErrorCode[LAVSErrorCode["HandlerError"] = -32003] = "HandlerError";
+})(LAVSErrorCode || (exports.LAVSErrorCode = LAVSErrorCode = {}));
+//# sourceMappingURL=types.js.map

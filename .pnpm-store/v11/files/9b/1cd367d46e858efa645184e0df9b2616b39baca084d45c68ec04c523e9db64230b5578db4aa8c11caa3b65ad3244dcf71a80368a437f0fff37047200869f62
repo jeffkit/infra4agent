@@ -1,0 +1,57 @@
+/**
+ * LAVS MCP Server
+ *
+ * Creates a standard MCP server (using @modelcontextprotocol/sdk) that exposes
+ * LAVS endpoints as MCP tools. This is agent-agnostic — any MCP-compatible
+ * client (Claude Code, Cursor, OpenAI, custom agents, etc.) can connect.
+ *
+ * @example Programmatic usage
+ * ```typescript
+ * import { createLAVSMcpServer, connectStdio } from 'lavs-runtime';
+ *
+ * const server = await createLAVSMcpServer({
+ *   agentId: 'jarvis',
+ *   agentDir: './agents/jarvis',
+ * });
+ * await connectStdio(server);
+ * ```
+ *
+ * @example CLI usage
+ * ```bash
+ * npx lavs-runtime serve --agent-dir ./agents/jarvis
+ * ```
+ */
+import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
+export interface LAVSMcpServerOptions {
+    agentId: string;
+    agentDir: string;
+    projectPath?: string;
+}
+/**
+ * Create a standard MCP server backed by LAVS endpoints.
+ *
+ * Reads the agent's `lavs.json` manifest, generates tools for each endpoint,
+ * and registers them on an `McpServer` instance from @modelcontextprotocol/sdk.
+ *
+ * @returns The McpServer instance (call `connectStdio()` or attach your own transport)
+ */
+export declare function createLAVSMcpServer(options: LAVSMcpServerOptions): Promise<McpServer>;
+/**
+ * Connect an McpServer to stdio transport (stdin/stdout).
+ *
+ * This is the standard way MCP servers communicate with clients.
+ * After calling this, the process will read JSON-RPC messages from stdin
+ * and write responses to stdout.
+ */
+export declare function connectStdio(server: McpServer): Promise<void>;
+/**
+ * Get the conventional LAVS tool name prefix for MCP tool naming.
+ *
+ * When an MCP client connects to a LAVS server named `lavs-{agentId}`,
+ * the full tool names visible to the agent will be:
+ *   `mcp__lavs-{agentId}__{toolName}`
+ *
+ * This utility generates those full names for use in allowedTools lists.
+ */
+export declare function getLAVSToolNames(agentId: string, toolNames: string[]): string[];
+//# sourceMappingURL=mcp-server.d.ts.map

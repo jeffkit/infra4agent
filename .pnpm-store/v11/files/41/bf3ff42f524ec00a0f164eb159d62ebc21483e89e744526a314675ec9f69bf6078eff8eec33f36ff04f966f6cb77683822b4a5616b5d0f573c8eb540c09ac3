@@ -1,0 +1,56 @@
+/**
+ * 多隧道形态（形态二，与 rust/python 客户端同构）
+ *
+ * 配置来源（优先级：CLI > env > 配置文件 > 默认）：
+ * - 配置文件（--config）：.toml 直接读 rust/python 同款 client.toml
+ *   （smol-toml，TOML 1.0）；.json 为 TS 侧等价形态。键名一致：
+ *     server / token / target / [[tunnel]](name|token|target) / reconnect_secs / force
+ * - TUNELY_TUNNELS 环境变量：JSON 数组（systemd/launchd env 友好）
+ *
+ * 多隧道形态下禁止单隧道来源（--token/--target 与 TUNELY_TOKEN/TUNELY_TARGET），
+ * 避免两种形态静默混用。单隧道解析行为与 0.3.x 完全一致。
+ */
+export interface MultiTunnelEntry {
+    name?: string;
+    token?: string;
+    target?: string;
+}
+export interface MultiTunnelFileConfig {
+    server?: string;
+    token?: string;
+    target?: string;
+    tunnel?: MultiTunnelEntry[];
+    reconnect_secs?: number;
+    max_reconnect?: number;
+    force?: boolean;
+}
+/** 读配置文件：.toml 走 TOML 解析（与 rust/python 同一份 client.toml），其余按 JSON */
+export declare function loadConfigFile(path: string): MultiTunnelFileConfig;
+export interface ResolvedTunnel {
+    /** 多隧道会话标签；单隧道为 null（日志前缀约定与 rust/python 一致） */
+    name: string | null;
+    serverUrl: string;
+    token: string;
+    targetUrl: string;
+    /** 秒（TS 客户端内部换算毫秒） */
+    reconnectSecs: number;
+    maxReconnect: number;
+    force: boolean;
+}
+export interface ResolveInputs {
+    file?: MultiTunnelFileConfig | null;
+    /** TUNELY_TUNNELS env 原文（JSON 数组），未设置为 null */
+    envTunnels?: string | null;
+    /** CLI --server（未传为 undefined） */
+    cliServer?: string;
+    /** CLI --token 或 env TUNELY_TOKEN（未传为 undefined） */
+    cliToken?: string;
+    /** CLI --target 或 env TUNELY_TARGET（未传为 undefined） */
+    cliTarget?: string;
+    /** CLI --reconnect（秒，未传为 undefined） */
+    cliReconnectSecs?: number;
+    /** CLI --force */
+    cliForce?: boolean;
+}
+export declare function resolveTunnels(input: ResolveInputs): ResolvedTunnel[];
+//# sourceMappingURL=multitunnel.d.ts.map

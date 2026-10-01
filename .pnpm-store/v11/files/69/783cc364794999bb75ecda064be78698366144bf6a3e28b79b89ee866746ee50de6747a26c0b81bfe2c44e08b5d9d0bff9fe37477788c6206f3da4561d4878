@@ -1,0 +1,57 @@
+/**
+ * LAVS Rate Limiter
+ *
+ * Simple in-memory rate limiter for LAVS endpoint calls.
+ * Uses a sliding window counter algorithm.
+ */
+/**
+ * Rate limit configuration
+ */
+export interface RateLimitConfig {
+    /** Maximum number of requests allowed in the window */
+    maxRequests: number;
+    /** Time window in milliseconds */
+    windowMs: number;
+}
+/**
+ * Rate limit check result
+ */
+export interface RateLimitResult {
+    allowed: boolean;
+    remaining: number;
+    resetAt: number;
+}
+/**
+ * LAVS Rate Limiter - prevents excessive endpoint calls
+ */
+export declare class LAVSRateLimiter {
+    private windows;
+    private defaultConfig;
+    /**
+     * Create a rate limiter with default configuration
+     * @param config - Default rate limit config (default: 60 requests per minute)
+     */
+    constructor(config?: Partial<RateLimitConfig>);
+    /**
+     * Check if a request is allowed under the rate limit.
+     *
+     * @param key - Rate limit key (e.g., `${agentId}:${endpointId}`)
+     * @param config - Optional per-key override config
+     * @returns Rate limit check result
+     */
+    check(key: string, config?: Partial<RateLimitConfig>): RateLimitResult;
+    /**
+     * Reset rate limit for a key
+     */
+    reset(key: string): void;
+    /**
+     * Clear all rate limit entries
+     */
+    clearAll(): void;
+    /**
+     * Clean up expired windows to prevent memory leaks.
+     * Should be called periodically.
+     */
+    cleanup(): void;
+}
+//# sourceMappingURL=rate-limiter.d.ts.map

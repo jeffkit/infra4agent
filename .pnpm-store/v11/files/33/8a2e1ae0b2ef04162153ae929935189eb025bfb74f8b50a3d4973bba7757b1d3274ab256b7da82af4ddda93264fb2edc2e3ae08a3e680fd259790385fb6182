@@ -1,0 +1,11 @@
+/**
+ * Tunely TypeScript Client 单元测试
+ *
+ * 测试内容：
+ * - 请求头清理逻辑（hop-by-hop headers 移除）
+ * - 指数退避计算逻辑
+ * - 连接状态管理（consecutiveRejectCount 重置）
+ * - onDisconnect 在正常关闭时触发（Bug Fix 回归测试）
+ */
+export {};
+//# sourceMappingURL=client.test.d.ts.map
