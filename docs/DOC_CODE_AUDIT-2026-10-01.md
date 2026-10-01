@@ -294,3 +294,19 @@
 | 文档断言测试 | `hil-mcp/tests/test_docs_claims.py`（5 用例）、`argusai/packages/mcp/tests/unit/docs-claims.test.ts`（3 用例）、`im-agentproc/tests/doc_claims.rs`（4 用例，纯 std） | 各仓把「文档声称 == 代码实际」固化进测试：改引擎/Transport/工具清单而不同步文档时测试变红 |
 
 后续节奏：改跨仓依赖边或文档计数 → 跑 `monarbor doctor`；叙事层漂移 → 按月跑 doc-audit skill（模板 = 本报告的 12 组审计任务，待固化为 `.zcode/skills/doc-audit`）。
+
+## 八、代码侧遗留项处置（2026-10-01 第二轮）
+
+§六「转交代码侧」7 项中的 6 项已顺手修复（全部为注释/元数据级，零行为变更）：
+
+| 项 | 仓 | 处置 |
+|----|----|------|
+| ilink-hub main.rs mysql:// 示例 | ilink-hub | doc 注释改为 SQLite/PostgreSQL + 「MySQL 仅编译期」注记（rustfmt 单文件验证通过；全仓 fmt 存量违规在 types.rs:880，非本次引入，clippy 校验见提交） |
+| agently-mail-client constants.js spawnSync 注释 | agently-mail-client | 注释改为「被父进程超时逻辑杀掉」（npm test 的 schedule-runner 失败为存量问题，与本改动无关，改动前后均失败） |
+| tunely server.py/tests 的「0.12」注释 | tunely | 5 处改为「已落地/现行行为」表述，py_compile 通过，文档层 0.12 归属零残留 |
+| marketplace plugin.json repository 指向大仓 | argusai-marketplace | 改指 jeffkit/argusai-marketplace（JSON 校验通过） |
+| recursive-providers CC0 无 LICENSE 文件 | recursive-providers | 补 CC0-1.0 全文 LICENSE（creativecommons.org legalcode），README 注记反转为指向 LICENSE |
+| 大仓根散落物 | infra4agent | .gitignore 增加 .pnpm-store/；.zcodeignore 与 docs/keeper-upgrade-A-session.patch 入库留档 |
+
+**hil-mcp TS 客户端 404（唯一行为级修复）**：根因不是客户端路径写错，而是服务端 `/api` 面只有 wecom-aibot 特例路由，未实现 TS 客户端按约定调用的通用 `/api/engines/{etype}/start`（admin.py 已有同源实现挂在 `/admin` 前缀下）。修复：api.py 补通用路由（require_api_token 鉴权，与管理台实现同源 `_start_engine`），wecom 特例保持优先；新增 `packages/hitl-server/tests/test_api_engines_start.py` 3 个回归用例（11 passed，含既有 registry 测试）。
+**argusai 分支规约**：文档断言测试提交已从本地 main 移至 `develop` 分支（0ba5ec0；远端尚无 develop，推送时新建），main 回退对齐 origin/main。

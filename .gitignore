@@ -27,6 +27,7 @@ mona.local.yaml
 
 # 通用
 .DS_Store
+.pnpm-store/
 .worktrees/
 .onboarding/
 .cursor/
