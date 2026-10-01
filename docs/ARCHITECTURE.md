@@ -1,6 +1,6 @@
 # infra4agent 架构文档
 
-> 最后更新：2026-09-28（登记 monarbor 为第 21 子仓并加固其嵌套扫描；清理 im-agentproc 重复条目；修正 ui-tasks 发布状态）  
+> 最后更新：2026-10-01（编排口径落单轨：mermaid/要点/§6 链路对齐 §5.1；mona.yaml 三处描述同步代码；关闭已消解张力 §8.2/§8.4/§8.6/§8.9 并更新 §8.5；recursive 依赖边按 package.json 现状修正）  
 > 维护者：jeffkit  
 > 配置源：根目录 `mona.yaml`（子仓清单以该文件为准）
 
@@ -49,7 +49,7 @@ flowchart TB
     BB["browser-bridge"]
   end
 
-  subgraph orch["编排层（两套并行）"]
+  subgraph orch["编排层（单轨：plaita 现役 / flowcast 冻结回退）"]
     FC["flowcast"]
     PL["plaita"]
   end
@@ -110,14 +110,14 @@ flowchart TB
 ### 读图要点
 
 1. **agentproc 是横切共享协议**：通道、编排、协同多条链路在进程边界上汇聚到它（stdin turn / stdout NDJSON）。
-2. **flowcast 与 plaita 是并行编排栈**：产品叙事接近，本大仓内**无互依赖**。
+2. **编排已单轨收敛到 plaita**（§5.1 / ADR-2026-08-27）：plaita 现役（`@flow` 权威），flowcast 冻结仅存量回退；两者本大仓内**无互依赖**。
 3. **通道三件套**（微信 hub / HITL / 邮件）入口不同，常接到 AgentProc 或 iLink。
 4. **lavs / web-bridge / browser-bridge 同属「Agent ↔ UI」叙事但路径不同**：lavs 是结构化 View 协议（CLI-first + 独立轻量 Host，v1.1 起以 content-type 为主抽象，支持 pinned/dispatch 双宿主模式）；web-bridge 是注入式 DOM/a11y 操控（Electron/Tauri console），面向本机 Agent 操控桌面 WebView；browser-bridge 是浏览器扩展 + gateway，面向**远程** Agent 经 MCP 操控本地真实浏览器（Chrome/Edge MV3），协议形状与 web-bridge 一致（`{id,method,params}` + `@eN` 引用）。三者互补，互不依赖。
 5. **argusai** 横切做 E2E；**marketplace** 只做 Claude Code 侧分发。
 6. **im-agentproc 是 agentproc-native 的 IM 桥接运行时**：从 ilink-hub 的 `src/bridge` 抽离，作为虚拟 token 后端连 Hub，把入站 IM 消息路由到 agentproc profile（P0 exec）；当前经 `Transport` trait 已接入 iLink/微信、Telegram、WeCom（智能机器人 WebSocket）、飞书（WebSocket）、Discord（Gateway WebSocket）。Agent 出站投递（文本 + 媒体）通过 im-agentproc 内置的 MCP server（`send_text` / `send_image` / `send_file` / `send_voice`），hub profile 进程通过标准 `mcp_servers` 块连入。
-7. **mediaflow 是本大仓唯一的业务应用**：内容生产走 flowcast 编排（创意→文案→配图/视频→发布），发布与互动闭环经 hil-mcp 微信确认；公众号走官方 API 全自动、小红书走 browser-use 半自动、视频走 MiniMax（后三者为仓外能力）。
+7. **mediaflow 是本大仓唯一的业务应用**：内容生产走 plaita 编排（`plaita_flows/` 8 条 flow 为权威，ADR-2026-08-27 全量迁移；`.flowcast/flows/` 仅回退），发布与互动闭环经 hil-mcp 微信确认；公众号走官方 API 全自动、小红书走 browser 半自动、视频走 MiniMax（后三者为仓外能力）。
 8. **deepseek-harness 的集成已转纯插件形态**（[ADR-2026-09-06](./ADR-2026-09-06-dsh-pure-plugin-form.md)）：fork 分支封存；`dsh-lavs-integration` 公开子仓经官方 profile/bundle/dsh.client 机制仓外挂载 LAVS host 适配、原生右侧栏视图 tab（**纯项目作用域**：视图只认会话工作目录下 `.lavs/bundles/`，fs.watch 热更新），零上游文件改动；**已发 npm 裸名五包**——`dsh-bundle-lavs@0.1.1` + `dsh-plugin-{lavs-host,ui-lavs,ui-tasks,lavs-cli}@0.1.0`，`dsh plugin add` 包名直装（web-app 务必用与运行时同版本的显式版本——上游 dsh-web-app 的 latest 标签停在 0.0.x 会被兼容门拒）；headless `--resume` runner 已退役（上游 ≥0.1.6 原生 `--session-id` adopt + `--json` 取代）；agent 工具面收敛为 `lavs` CLI + Skill，常驻工具改 opt-in；ui-tasks（Tasks tab）已移植到 0.1.7-rc.2 正式 API 并**随 `dsh-bundle-lavs@0.1.1` 发布**。
-9. **tunely 是唯一的公网隧道**：内网客户端主动拨出 WebSocket（不开入站端口），字节级透传 TCP 流量——HTTP/WebSocket/SSE 全部原样穿过（Host/Origin 不改写）。Python 服务端（API 管理面 + `tcp_listen_port` 裸 TCP 出口两种形态）+ Python/TypeScript/Rust 三客户端（Rust 单二进制零运行时）。当前部署：crypto 上 9080 出口固定转发 `dsh` 隧道，暴露本机 DSH web。
+9. **tunely 是唯一的公网隧道**：内网客户端主动拨出 WebSocket（不开入站端口），字节级透传 TCP 流量——HTTP/WebSocket/SSE 全部原样穿过（注意：tunely 自身文档未显式声明「Host/Origin 不改写」，HTTP 面 rust/README 写明剥离 hop-by-hop 头；TCP 面 0.11 起为纯字节流、无头语义可改）。Python 服务端（API 管理面 + `tcp_listen_port` 裸 TCP 出口两种形态）+ Python/TypeScript/Rust 三客户端（Rust 单二进制零运行时）。当前部署：crypto 上 9080 出口固定转发 `dsh` 隧道，暴露本机 DSH web。
 10. **monarbor 既是管理本仓的工具，也是本仓子仓**：它按 `mona.yaml` 管理全部子仓，因此自身也登记进来（`monarbor/`，第 21 个子仓）就地迭代——工具缺陷与被它管理的仓同仓可见，避免"工具问题只能靠 `pip install` 的外部版本解决"。本机经 pipx 从该路径安装。近期加固：嵌套大仓递归发现不跟随符号链接、剪枝依赖/构建目录、深度上限兜底，修掉 `monarbor list` 在含 pnpm/vendor 软链环仓库上的 ENAMETOOLONG 崩溃（[MONARBOR_NOTES.md](./MONARBOR_NOTES.md)）。
 
 ---
@@ -138,7 +138,7 @@ flowchart TB
 | `lavs` | LAVS | CLI-first 结构化 View 协议：content-type 为主抽象，view bundle 可跨 Agent 复用，配独立轻量 Host 渲染；含 TS/Py SDK | Agent 视图 |
 | `web-bridge` | web-bridge | 注入式 DOM/a11y 桥：MCP/CLI 操控桌面 WebView 页面 | 页面操控 |
 | `browser-bridge` | browser-bridge | MV3 扩展（Chromium+Firefox）+ MCP gateway：远程 Agent 操控本地真实浏览器；serve/mcp/relay 三部署形态，多浏览器 browserId 路由 | 页面操控 |
-| `mediaflow` | MediaFlow | KONG 自媒体运营：Flowcast 编排创意→文案→配图/视频→审核→发布 | 业务应用 |
+| `mediaflow` | MediaFlow | KONG 自媒体运营：plaita 编排创意→文案→配图/视频→审核→发布（`plaita_flows/`，ADR-2026-08-27 全量迁移；flowcast 版仅回退） | 业务应用 |
 | `tunely` | Tunely | WebSocket 反向代理隧道：内网服务经公网 HTTPS 可达；Py 服务端 + Py/TS/Rust 客户端（Rust 单二进制） | 公网隧道 |
 | `argusai` | ArgusAI | YAML 驱动 Docker E2E + `argusai-mcp` | 测试 |
 | `argusai-marketplace` | ArgusAI Marketplace | Claude Code Plugin，拉起 `argusai-mcp` | 测试分发 |
@@ -163,33 +163,33 @@ flowchart TB
 | `agently-mail-client → agentproc` | npm 依赖 + dispatcher | `package.json` / `src/dispatcher.js` |
 | `issue-keeper → agentproc` | 主链路 spawn CLI（非 Python 包依赖） | `issue_keeper/profile.py` |
 | `recursive/.dev/flows → flowcast` | 自改/开发 flow | `.dev/flows/package.json` |
-| `recursive/e2e → argusai` | E2E plugins（常为 file: 布局依赖） | `e2e/plugins/package.json` |
+| `recursive/e2e → argusai` | E2E plugins（npm 语义版本依赖 `argusai-core ^0.14.2`；早期 `file:` 相对布局已移除） | `e2e/plugins/package.json` |
 | `im-agentproc → agentproc` | Rust crate 硬依赖（crates.io 0.11，非 git rev pin） | `im-agentproc/Cargo.toml` |
 | `mediaflow → flowcast` | npm 依赖 `file:../flowcast`；所有 flow 经 `flowcast run` 驱动 | `mediaflow/package.json` |
 | `dsh-lavs-integration → deepseek-harness` | `@deepseek-ai/dsh-*` peer 锚 `^0.1.7-rc.2`（dsh 兼容门安装前预检），类型为根 devDeps 精确锁 npm 包；已发 npm（裸名五包：`dsh-bundle-lavs@0.1.1` + `dsh-plugin-{lavs-host,ui-lavs,ui-tasks,lavs-cli}@0.1.0`，`dsh plugin add` 包名直装），开发期 tarball/`file:` 挂载 | `bundles/lavs/cordis.patch.yml` |
 | `plaita-nodes → plaita` | Python 包依赖（editable，plaita 0.5.0 未发 PyPI） | `plaita-nodes/pyproject.toml` |
 | `plaita-nodes → agentproc` | Python SDK 依赖（`runner.run` + `EXECUTORS` 注册 recursive-direct） | `plaita-nodes/src/plaita_nodes/agent_run.py` |
-| `mediaflow → plaita-nodes` | 试点迁移（ADR-2026-08-27）：content-daily 经 plaita + 节点集运行 | `mediaflow/plaita_flows/` |
+| `mediaflow → plaita-nodes` | 全量迁移已完成（ADR-2026-08-27：8/8 flow 在 `plaita_flows/flows/`）；运行期 `package.json` scripts 仍经 flowcast 驱动，plaita 版为收敛目标 | `mediaflow/plaita_flows/` |
 
 ### 4.2 协议 / 可选集成
 
 | 边 | 说明 |
 |----|------|
 | `flowcast → recursive` | 可选 executor（直连 CLI；recursive 未必走 agentproc EXECUTORS） |
-| `recursive → ilink-hub` | 微信 `base_url` / `WEIXIN_BASE_URL` 指向 hub |
-| `recursive → recursive-providers` | 启动时经 raw URL 拉取 providers.json（本地缓存超 7 天刷新）；纯运行期数据源，无构建期依赖 |
-| `ilink-hub → agentproc` | Bridge / profile 协议（NDJSON） |
+| `recursive → ilink-hub` | 微信 `base_url` / `WEIXIN_BASE_URL` **可选**指向 hub；代码默认 `None`＝官方腾讯端点，hub 仅为显式覆盖项 | `recursive/src/main.rs` |
+| `recursive → recursive-providers` | 后台经 raw URL 拉取 providers.json（本地缓存超 7 天刷新；自动刷新需 `RECURSIVE_PROVIDERS_AUTO_REFRESH=1` opt-in）；providers.json 由 GitHub Actions 每日校验后直推 main（旧 auto/sync-providers PR 机制已废弃）；纯运行期数据源，无构建期依赖 | `recursive/src/providers_cache.rs` |
+| `ilink-hub → agentproc` | （历史边）hub 0.4.0 起 hub-only：bridge 已拆至 im-agentproc，此边由 `im-agentproc → agentproc` 承接；hub 现存 A2A MCP（list_agents/call_agent）调 Agent | `ilink-hub/CHANGELOG.md` 0.4.0 |
 | `ilink-hub ↔ agently-mail-client` | 邮件能力从 hub 抽出；双通道共享 AgentProc 思路 |
-| `flowcast → hil-mcp` | HITL 后端可走 MCP（历史配置键 `@wecom-hil`） |
+| `flowcast → hil-mcp` | HITL 后端可走 MCP（默认 server 名 `@hitl`，hitl.js:103；历史键 `@wecom-hil` 仅存注释/示例残留） |
 | `issue-keeper → hil-mcp` | keeper 巡检 HitL（可选 MCP） |
 | `agently-mail-client → argusai` | 可选 `e2e.yaml` |
-| `plaita → argusai` | console 全系统 E2E：`plaita-console/e2e.yaml`（16 suite 231 用例：API 面 / 鉴权 RBAC / dry-run 含 onlyNode / engine 级多进程含 cancel 终态与 switch 分支 / 引擎可靠性（双 worker + DLQ）/ 版本管理与删除联动 / 契约面 HMAC / 调度边界 / 注册表审计 / 控制台 UI；混沌矩阵：Redis 瞬断 / console 重启 / worker 重启 / DLQ）+ `scripts/e2e-{run,gate,chaos-*.sh}` 经 mcp2cli/argusai-mcp 驱动；CI 经 `.github/workflows/console-e2e.yml` 路径过滤接入。工具链依赖，非包依赖 |
+| `plaita → argusai` | console 全系统 E2E：`plaita-console/e2e.yaml`（18 suite，用例散布 `tests/e2e/*.yaml` 19 个文件：API 面 / 鉴权 RBAC / dry-run 含 onlyNode / engine 级多进程含 cancel 终态与 switch 分支 / 引擎可靠性（双 worker + DLQ）/ 版本管理与删除联动 / 契约面 HMAC / 调度边界 / 注册表审计 / 控制台 UI；混沌矩阵：Redis 瞬断 / console 重启 / worker 重启 / DLQ）+ `scripts/e2e-{run,gate,chaos-*.sh}` 经 mcp2cli/argusai-mcp 驱动；CI 经 `.github/workflows/console-e2e.yml` 路径过滤接入。工具链依赖，非包依赖 |
 | `hil-mcp → iLink API` | 默认可直连腾讯端点；语义上可兼容 hub 代理 |
 | `mediaflow → hil-mcp` | 发布 / 互动闭环经微信 HITL 确认（config 驱动，非 npm 依赖） |
 | `im-agentproc ↔ ilink-hub` | 从 hub `src/bridge` 抽离；运行期作为虚拟 token 后端连 Hub 跑 profile | `im-agentproc/src/bridge/transport.rs` |
 | `im-agentproc → agentproc` | 每条入站 IM 消息触发一次 agentproc profile（P0 exec 协议） | `im-agentproc/src/bin/im-agentproc.rs` |
 | `issue-keeper screener → plaita-console` | screener `backend=flow`：拉 console 上已发布 `issue-screener` flow 定义（semver 最高，X-Admin-API-Key，TTL+stale 缓存+本地凭据回退），本地 DecisionNode 执行；判定配置的版本与质量由 plaita-ai supervisor 自迭代管线管护 | `issue_keeper/screener.py` |
-| `dsh-lavs-integration → lavs` | 同源协议集成：lavs-host serve `/lavs-view/<bundle>/` 视图文件与 `/lavs` Connection RPC（list/call → lavs-runtime ScriptExecutor），视图消费 view 协议但**不依赖 @lavs/* npm 包** | `packages/lavs-host` |
+| `dsh-lavs-integration → lavs` | 同源协议集成：lavs-host serve `/lavs-view/<bundle>/` 视图文件与 `/lavs` Connection RPC（list/call → lavs-runtime ScriptExecutor），不依赖 `@lavs/*` scope 包，但运行时依赖 npm 裸名包 `lavs-runtime@^0.2.0`（lavs 仓 runtime 现为 0.8.0，版本偏旧待升） | `packages/lavs-host/package.json` |
 
 ### 4.3 文档级 / 无兄弟硬边
 
@@ -235,16 +235,18 @@ flowchart LR
 
 ## 5. 两个关键设计分叉
 
-### 5.1 编排双轨：flowcast vs plaita
+### 5.1 编排单轨：plaita（flowcast 冻结回退）
 
-| | flowcast | plaita |
+2026-08-27 决议（[ADR-2026-08-27](./ADR-2026-08-27-orchestration-converge-on-plaita.md)）：**新编排一律 plaita**（`@flow` 源码为权威定义），执行层统一 agentproc；flowcast 停止演进，仅存量保留作回退（mediaflow 已全量迁移，验收后冻结其 flowcast 版）。
+
+| | plaita（现役） | flowcast（冻结） |
 |--|----------|--------|
-| 语言/形态 | Node ESM 库 + CLI | Python 运行时 + DSL |
-| 擅长 | 多 CLI/Agent、自改沙箱、质量门、L3 codegen | JSON/@flow 逻辑流、插件 Node、分布式续执 |
-| 与 agentproc | 硬依赖 | 本大仓内无直接边 |
-| 关系 | **并行**，非上下游 | 同上 |
+| 语言/形态 | Python 运行时 + JSON/@flow DSL | Node ESM 库 + CLI |
+| 执行层 | agentrun 节点经 agentproc `runner.run` | 内置多 CLI/Agent 调度 |
+| 业务流 | mediaflow `plaita_flows/`（权威） | mediaflow `.flowcast/flows/*.js`（回退） |
+| 写 flow 指导 | plaita-ai skills（flow-coder）+ `plaita-ai/plaita_ai/skills/flow-coder/references/authoring-spec.md`（编写规范权威单源） | — |
 
-改「让 Agent 跑任务流 / 自迭代」优先看 flowcast；改「平台式逻辑编排引擎」优先看 plaita。
+改「让 Agent 跑任务流 / 自迭代」与改「平台式逻辑编排」现在都**优先看 plaita**；动 flowcast 存量前先确认是否应直接迁 plaita。
 
 ### 5.2 通道三件套
 
@@ -277,7 +279,7 @@ flowchart LR
    业务仓或 recursive e2e → `argusai`（YAML + Docker）；Claude 侧可经 marketplace 装插件。
 
 6. **可视化 Agent 面（CLI-first 模式）**  
-   Agent 目录有 `lavs.json` → `lavs discover` 列出可用 bundle → `lavs view [contentType]` 启动本地 Host + 浏览器 tab → Agent 通过 `lavs call <endpoint>` 操作数据 → View 通过 SSE 自动刷新。亦可配合 AgentStudio 等支持 LAVS 的宿主（pinned / dispatch 模式）。
+   Agent 目录有 `lavs.json` → `lavs-runtime discover` 列出可用 bundle → `lavs-runtime view [contentType]` 启动本地 Host + 浏览器 tab → Agent 通过 `lavs-runtime call <endpoint>` 操作数据 → View 通过 SSE 自动刷新（lavs 仓 bin 名为 `lavs-runtime`；DSH 侧经 dsh-plugin-lavs-cli 提供的短命令 `lavs` 仅 list/schema/call 三个动词）。亦可配合 AgentStudio 等支持 LAVS 的宿主（pinned / dispatch 模式）。
 
 7. **操控桌面应用 WebView**  
    `web-bridge serve` → 粘贴 inject.js 到 Electron/Tauri DevTools → Agent 经 MCP/CLI 定位与点击输入。
@@ -286,10 +288,10 @@ flowchart LR
    本地 Chrome/Edge 装 `browser-bridge` 扩展（options 填 gateway 地址 + token）→ 扩展出站 WebSocket 连远程机器上的 `browser-bridge-gateway serve` → 远程 Agent 经 MCP（streamable HTTP `/mcp`）调 browser_* 工具 → snapshot 得 `@eN` → 点击/输入/截图。同机 agent 亦可 `gateway mcp`（stdio）拉起。
 
 9. **IM 经 AgentProc 桥接**  
-   用户 → iLink → `ilink-hub` → `im-agentproc`（虚拟 token 后端）→ agentproc profile（claude-code/codex…）→ 回复；与链路 1 的区别是桥接层走 agentproc-native 的 profile 协议，而非 hub 自带的通用 YAML CLI 后端。
+   用户 → iLink → `ilink-hub` → `im-agentproc`（虚拟 token 后端）→ agentproc profile（claude-code/codex…）→ 回复；与链路 1 的区别是桥接层走 agentproc-native 的 profile 协议。ilink-hub 0.4.0 起 hub-only（bridge 已拆出）；通用本地 CLI 后端由 im-agentproc 的 `script:` 简写承担。
 
 10. **自媒体内容流水线**  
-   `mediaflow` 声明 flow → `flowcast` 编排执行（创意→文案→配图/视频）→ 发布/互动经 hil-mcp 微信确认 → 公众号官方 API 全自动发布 / 小红书 browser-use 半自动。
+   `mediaflow` 声明 flow（`plaita_flows/` 权威）→ plaita 编排执行（创意→文案→配图/视频；flowcast 版仅回退）→ 发布/互动经 hil-mcp 微信确认 → 公众号官方 API 全自动发布 / 小红书网页半自动。
 
 ---
 
@@ -309,14 +311,14 @@ flowchart LR
 以下不影响导航主图，但改代码前宜核对：
 
 1. **hil-mcp 是否生产推荐经 ilink-hub 代理**（代码默认可直连官方 iLink）。
-2. **flowcast HITL 配置名**（历史 `@wecom-hil`）与当前 `hitl-mcp` 包名是否文档已对齐。
+2. ~~**flowcast HITL 配置名**~~ **已对齐（2026-10 核验）**：代码默认 server 名为 `@hitl`（flowcast/hitl.js:103），全仓 grep `@wecom-hil` 零命中；残留仅为 hitl.js:44 注释（已改）与个别文档措辞。
 3. **ilink-hub 内旧 `.flowx` / `@force-lab/flowx` 引用** 与现包名 `flowcast` 是否需迁移。
-4. **ilink-hub email-bridge vs agently-mail-client** 哪边为正式发布源。
-5. **agentproc 版本分裂**（如 flowcast 与 mail-client 锁定版本差较大）的兼容边界。
-6. **recursive e2e 的 `file:…/infra4agent/argusai`** 依赖大仓相对布局，单独 clone 可能失效。
+4. ~~**ilink-hub email-bridge vs agently-mail-client**~~ **已消解（2026-10 核验）**：ilink-hub 全仓无 email 代码/部署物，正式发布源唯一为 agently-mail-client。
+5. **agentproc 版本分裂**：同一 npm 包 `agentproc`，flowcast 锁 `^0.10.1`、agently-mail-client 锁 `^0.1.1`（差近十个 minor）；Rust crate 独立轨 0.12.0（im-agentproc 锁 0.11.1）。兼容边界待 owner 确认。
+6. ~~**recursive e2e 的 `file:…/infra4agent/argusai`**~~ **已消解（2026-10 核验）**：`e2e/plugins/package.json` 现为 registry 语义版本依赖 `argusai-core ^0.14.2`，无 file: 相对路径，单独 clone 不再失效。
 7. **plaita 与 flowcast 是否计划互通**——当前是缺口，不是隐藏依赖。2026-08-27 已有决议方向：编排内核收敛到 plaita、执行层经 agentproc，见 [ADR-2026-08-27](./ADR-2026-08-27-orchestration-converge-on-plaita.md)（mediaflow 全量迁移已完成）。
 8. **web-bridge 与 lavs** 叙事已明确分工：lavs 主张「Agent 产生结构化数据 → 渲染对应 view bundle」；web-bridge 主张「Agent 注入操控现有 Web 页面 DOM」。两者互补，不合并。lavs v1.1 新增 dispatch 模式（按 content-type 分发）和独立轻量 Host（`lavs view` 命令），不再依赖 AgentStudio 作唯一宿主。
-9. **ilink-hub 的 `ilink-hub-bridge` 与新建 `im-agentproc` 的关系**——后者从前者 `src/bridge` 抽离，是 agentproc-native 的 IM→本地 CLI 桥接运行时（跑 agentproc profile，遵循 P0 exec）；前者仍保留通用 YAML 驱动的本地 CLI 后端。需确认哪边为 IM→AgentProc 的正式入口（提案 `bridge-as-multi-im-runtime` 指向 im-agentproc 为后继）。
+9. ~~**ilink-hub-bridge 与 im-agentproc 的关系**~~ **已成定局（2026-10 核验）**：ilink-hub 0.4.0 起物理拆除 bridge（无 src/bridge、无 ilink-hub-bridge bin），IM→AgentProc 唯一正式入口为 im-agentproc（agentproc profile，P0 exec）；hub 现存 Agent 面为 A2A MCP（list_agents/call_agent）。
 10. **DSH×LAVS 集成已转纯插件形态**（[ADR-2026-09-06](./ADR-2026-09-06-dsh-pure-plugin-form.md)）：`dsh-lavs-integration` 子仓经官方 profile/bundle 机制仓外挂载，零上游文件改动；8/16 的 fork 集成与 ADR-2026-08-16 的"暂不整合"决议一并由该 ADR 取代。fork 分支封存留档，上游 PR 通道仍关闭（`submit-pr.sh` 作废）。
 11. **web-bridge 与 browser-bridge 分工**：web-bridge 主张「本机 Agent 注入操控 Electron/Tauri 等桌面 WebView」；browser-bridge 主张「远程/本机 Agent 经浏览器扩展 + gateway 操控真实浏览器（Chrome/Edge）」。协议形状有意一致（`{id,method,params}` + `@eN`）降低心智成本，但两者无代码依赖，无合并计划。
 12. **大仓工具 monarbor 的 `list` 崩溃已修复**（曾为已知缺陷，非配置问题）：`list_repos` 曾无条件调用 `find_nested_monorepos` 且不传 `exclude_paths`，而该函数既不剪枝 `node_modules` 又跟随符号链接；deepseek-harness 的 `vendor/cordis` 与 `vendor/include` 互为软链构成目录环，递归到路径超长（`OSError: [Errno 63] File name too long`）。0.3.0 与 0.4.0 均复现。**修复已落在子仓 `monarbor`**（不跟软链 + 剪枝依赖/构建目录 + 深度上限 + `list_repos` 传精确排除集），并补 8 个回归测试；根因剖析、影响面矩阵与复现见 [MONARBOR_NOTES.md](./MONARBOR_NOTES.md)。
@@ -337,7 +339,7 @@ flowchart LR
 | `AGENTS.md` | AI 入仓导航入口 |
 | `mona.yaml` | 子仓清单与描述 |
 | `docs/DOC_CODE_MAP.md` | 文档 ↔ 代码映射 |
-| `docs/MONARBOR_NOTES.md` | monarbor 工具缺陷（`list` 崩溃）与可用命令矩阵 |
+| `docs/MONARBOR_NOTES.md` | monarbor 软链环崩溃（`list` ENAMETOOLONG）根因与修复记录 |
 | `docs/ADR-2026-08-27-orchestration-converge-on-plaita.md` | 编排收敛到 plaita 的决议 |
 | `docs/ADR-2026-09-06-dsh-pure-plugin-form.md` | DSH×LAVS 转纯插件形态的决议 |
 | 各子仓 `AGENTS.md` | 子仓内 AI 导航 |

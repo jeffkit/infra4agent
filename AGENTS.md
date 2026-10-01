@@ -14,11 +14,11 @@
 
 ## 架构地图
 
-分层（下→上）：`agentproc` → 通道（ilink-hub / im-agentproc / hil-mcp / agently-mail）→ 运行时（recursive——provider 预设由配套数据仓 recursive-providers 供给 ‖ deepseek-harness，后者经仓外插件集 dsh-lavs-integration 挂载 LAVS 集成）→ 编排（flowcast ‖ plaita）→ 视图/操控（lavs ‖ web-bridge ‖ browser-bridge）→ argusai(+marketplace) → 协同/业务应用（issue-keeper ‖ mediaflow）。  
-**编排双轨**：flowcast（Node/CLI）与 plaita（Python Flow）并行、无互依赖。  
+分层（下→上）：`agentproc` → 通道（ilink-hub / im-agentproc / hil-mcp / agently-mail-client）→ 运行时（recursive——provider 预设由配套数据仓 recursive-providers 供给 ‖ deepseek-harness，后者经仓外插件集 dsh-lavs-integration 挂载 LAVS 集成）→ 编排（flowcast ‖ plaita）→ 视图/操控（lavs ‖ web-bridge ‖ browser-bridge）→ argusai(+marketplace) → 协同/业务应用（issue-keeper ‖ mediaflow）。  
+**编排单轨**：plaita（Python Flow，`@flow` 源码为权威定义）为新编排唯一内核，执行层统一 agentproc；flowcast（Node/CLI）冻结、仅存量回退（ADR-2026-08-27）。写 flow 的规范与 skill 见 `plaita/plaita-ai/plaita_ai/skills/flow-coder/`。  
 **视图三件**：lavs（结构化 View 协议）、web-bridge（注入式 DOM 操控桌面 WebView）、browser-bridge（MV3 扩展 + gateway，远程 Agent 经 MCP 操控本地真实浏览器）互补、无互依赖；web-bridge 与 browser-bridge 协议形状一致。  
 **横切协议**：多数通道/协同经 agentproc（stdin turn / stdout NDJSON）。  
-**新增 IM 桥接**：`im-agentproc` 从 `ilink-hub` 的 `src/bridge` 抽离，是 agentproc-native 的 IM→本地 CLI 桥接运行时——连 iLink Hub 作虚拟 token 后端，跑 agentproc profile（claude-code/codex 等），未来经 `Transport` trait 扩展飞书/Telegram。
+**新增 IM 桥接**：`im-agentproc` 从 `ilink-hub` 的 `src/bridge` 抽离，是 agentproc-native 的 IM→本地 CLI 桥接运行时——连 iLink Hub 作虚拟 token 后端，跑 agentproc profile（claude-code/codex 等）；经 `Transport` trait 已接入 iLink/微信、Telegram、WeCom、飞书、Discord 五通道。
 
 关键路径：
 - `mona.yaml` — 子仓清单（path / url / description / branches）
@@ -40,7 +40,8 @@
 ## 常用命令
 
 ```bash
-pip install monarbor
+# 安装修复版工具（上游 PyPI 0.4.0 仍含 list 崩溃缺陷，修复只在子仓 monarbor/）
+git clone git@github.com:jeffkit/monarbor.git && pipx install ./monarbor
 monarbor list
 monarbor status
 monarbor clone -b prod --jobs 4
@@ -50,7 +51,8 @@ monarbor add --path <p> --name "<n>" --url <git-url> \
 ```
 
 monarbor 自身也登记为本仓子仓 `monarbor/`（改工具逻辑就在那里改并提交）。本机经 pipx 从该路径安装；
-若 `monarbor list` 崩溃（软链环 ENAMETOOLONG），见 `docs/MONARBOR_NOTES.md`。
+`monarbor list` 曾因 deepseek-harness 软链环崩溃，**已修复**（不跟软链 + 剪枝 + 深度上限，含 8 个回归测试），
+根因与影响面见 `docs/MONARBOR_NOTES.md`。
 
 改子仓：`cd <path>` 后在该 git 仓内提交；大仓只提交配置/文档变更。
 

@@ -2,7 +2,7 @@
 
 - 日期：2026-09-06
 - 状态：已接受（Accepted）
-- 关联：[ADR-2026-08-16-lavs-not-now.md](./ADR-2026-08-16-lavs-not-now.md)（原"暂不整合"决议，本文推翻其"不进 dsh"前提）、`dsh-lavs-integration/`（落地物，本地子仓待登记 remote）
+- 关联：[ADR-2026-08-16-lavs-not-now.md](./ADR-2026-08-16-lavs-not-now.md)（原"暂不整合"决议，本文推翻其"不进 dsh"前提）、`dsh-lavs-integration/`（落地物，已登记为大仓子仓，见 mona.yaml）
 
 ## 决策
 

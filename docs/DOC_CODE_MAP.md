@@ -1,6 +1,6 @@
 # 文档 ↔ 代码映射
 
-> 最后更新：2026-09-28
+> 最后更新：2026-10-01
 
 大仓根只管理配置与导航文档；子仓源码在各自 git 仓库中（见 `.gitignore`）。
 
@@ -8,7 +8,7 @@
 
 | 文档 | 代码路径模式 | 说明 |
 |------|----------------|------|
-| `README.md` | `mona.yaml` | 人类向总览与子仓表（20 行，须与 mona.yaml 同步）；清单以 mona.yaml 为准 |
+| `README.md` | `mona.yaml` | 人类向总览与子仓表（21 行，须与 mona.yaml 同步）；清单以 mona.yaml 为准 |
 | `AGENTS.md` | `mona.yaml`, `docs/ARCHITECTURE.md` | AI 入仓导航；跨仓结构指向架构文档 |
 | `docs/ARCHITECTURE.md` | `mona.yaml` | 大仓分层、子仓角色与依赖关系；子仓清单以 mona.yaml 为准 |
 | `docs/ARCHITECTURE.md` | `.gitignore` | 子仓目录排除规则须与 mona.yaml 中 path 对齐 |
@@ -30,7 +30,7 @@
 | 文档 | 代码路径模式 | 说明 |
 |------|----------------|------|
 | `docs/LAVS_AGENT_SOP.md` | `bundles/*/lavs.json`, `lavs/sdk/typescript/runtime/src/{mcp-server,tool-generator,cli}.ts` | Agent 使用 LAVS 的标准操作流程：何时用 LAVS、如何用 lavs_call、Daemon 管理 |
-| `lavs/docs/DISPATCH-PROTOCOL.md` | `lavs/schema/lavs-manifest.schema.json`, `lavs/sdk/typescript/runtime/src/{loader,tool-generator,subscription-manager}.ts` | LAVS View 分发协议设计草案：content-type 为主抽象、pinned/dispatch 两种宿主模式、多 view 调度；草案，尚未落入 SPEC |
+| `lavs/docs/DISPATCH-PROTOCOL.md` | `lavs/schema/lavs-manifest.schema.json`, `lavs/sdk/typescript/runtime/src/{loader,tool-generator,subscription-manager}.ts` | LAVS View 分发协议设计稿：**核心概念已并入 `lavs/docs/SPEC.md` §11 View Dispatch Protocol (v1.1)（含 11.4 Host modes pinned/dispatch）**；本文自标 "partly superseded by SPEC §11"，作历史记录保留 |
 | `docs/ADR-2026-09-06-dsh-pure-plugin-form.md` | `dsh-lavs-integration/packages/*`, `dsh-lavs-integration/bundles/lavs/cordis.patch.yml` | DSH×LAVS 集成转纯插件形态：fork 封存、经官方 profile+bundle 仓外挂载、零上游改动；取代 ADR-2026-08-16 |
 | `docs/ADR-2026-08-27-orchestration-converge-on-plaita.md` | `mediaflow/plaita_flows/`, `plaita-nodes/src/plaita_nodes/*`, `issue-keeper/issue_keeper/screener.py` | 编排收敛决议：内核收敛到 plaita、执行层经 agentproc；flowcast 保留存量 |
 | `docs/ADR-2026-08-16-lavs-not-now.md` | `lavs/`（历史决议） | LAVS 暂不整合的旧决议，已被 ADR-2026-09-06 取代（仅存档） |

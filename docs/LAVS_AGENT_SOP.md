@@ -2,7 +2,10 @@
 
 > 适用对象：在 Cursor / Claude Code / 任何 MCP-compatible Agent 中工作的 AI Agent  
 > 适用仓库：infra4agent / lavs  
-> 最后更新：2026-07-28
+> 最后更新：2026-10-01（用户路径勘误；补 v1.1 口径注记）
+>
+> **v1.1 口径注记**：lavs v1.1 起主推 CLI-first 流程（`lavs-runtime discover / view / call`，见大仓 ARCHITECTURE §6.6）。
+> 本 SOP 的 MCP 工具流程（`lavs_discover` / `lavs_call`）与 pinned 宿主/Daemon 用法仍然有效，适用于 MCP 宿主场景。
 
 ---
 
@@ -33,9 +36,9 @@ LAVS（Local Agent View Service）是一个协议，让 AI Agent 能把结构化
 
 ```bash
 # 启动全局 Host，加载所有 bundles
-node /Users/kongjie/projects/infra4agent/lavs/sdk/typescript/runtime/dist/cli.js \
+node /Users/kong/projects/infra4agent/lavs/sdk/typescript/runtime/dist/cli.js \
   host \
-  --registry-dir /Users/kongjie/projects/infra4agent/bundles \
+  --registry-dir /Users/kong/projects/infra4agent/bundles \
   --port 7842
 ```
 
@@ -50,13 +53,13 @@ Host 启动后会自动打开浏览器并显示 View 界面。
 ### 第二步：用 `lavs_discover` 找到可用的 Bundle 和 Endpoint
 
 ```
-lavs_discover({ registryDir: "/Users/kongjie/projects/infra4agent/bundles" })
+lavs_discover({ registryDir: "/Users/kong/projects/infra4agent/bundles" })
 ```
 
 输出示例：
 ```
 📦 todo-list  (contentType: lavs/todo-list)
-   dir: /Users/kongjie/projects/infra4agent/bundles/todo-list
+   dir: /Users/kong/projects/infra4agent/bundles/todo-list
    
    • addTodo [mutation]
      Params:
@@ -74,7 +77,7 @@ lavs_discover({ registryDir: "/Users/kongjie/projects/infra4agent/bundles" })
 
 ```
 lavs_call({
-  registryDir: "/Users/kongjie/projects/infra4agent/bundles",
+  registryDir: "/Users/kong/projects/infra4agent/bundles",
   bundle: "todo-list",
   endpoint: "addTodo",
   params: { text: "完成架构文档", priority: "high" }
@@ -115,7 +118,7 @@ lavs_call({
 | `todo-list` | `lavs/todo-list` | 任务清单（CRUD） |
 | `notes` | `lavs/notes` | 笔记本（Markdown + 标签） |
 
-Bundle 目录：`/Users/kongjie/projects/infra4agent/bundles/`
+Bundle 目录：`/Users/kong/projects/infra4agent/bundles/`
 
 ---
 
@@ -124,7 +127,7 @@ Bundle 目录：`/Users/kongjie/projects/infra4agent/bundles/`
 ```bash
 # 安装 daemon（macOS launchd）
 node .../dist/cli.js daemon install \
-  --registry-dir /Users/kongjie/projects/infra4agent/bundles \
+  --registry-dir /Users/kong/projects/infra4agent/bundles \
   --port 7842
 
 # 查看状态

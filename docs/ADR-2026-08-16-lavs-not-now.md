@@ -1,8 +1,8 @@
 # ADR: LAVS 暂不整合进 dsh web
 
 - 日期：2026-08-16
-- 状态：已接受（Accepted）
-- 关联：[ADR-2026-08-16-dsh-workflow-layering.md](./ADR-2026-08-16-dsh-workflow-layering.md)（同批 dsh 整合评估）
+- 状态：**已被取代（Superseded）**——[ADR-2026-09-06-dsh-pure-plugin-form.md](./ADR-2026-09-06-dsh-pure-plugin-form.md) 推翻了本文「暂不整合」的前提；DSH×LAVS 现以 dsh-lavs-integration 纯插件形态落地
+- 关联：~~ADR-2026-08-16-dsh-workflow-layering.md~~（同批评估文档，未入库，链接已失效）
 
 ## 决策
 

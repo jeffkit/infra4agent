@@ -15,7 +15,7 @@ AI Agent **基础设施逻辑大仓** — 用 [monarbor](https://pypi.org/projec
 |------|------|
 | [agentproc](https://github.com/jeffkit/agentproc) | 消息平台 ↔ Agent CLI 的最小进程协议 + SDK + Profile Hub |
 | [ilink-hub](https://github.com/jeffkit/ilink-hub) | 微信 ClawBot iLink 多路复用 Hub |
-| [im-agentproc](https://github.com/jeffkit/im-agentproc) | 从 ilink-hub 抽离的 IM→AgentProc 桥接运行时（iLink/微信 → agentproc profile） |
+| [im-agentproc](https://github.com/jeffkit/im-agentproc) | 从 ilink-hub 抽离的 IM→AgentProc 桥接运行时（iLink/微信、Telegram、WeCom、飞书、Discord → agentproc profile） |
 | [hil-mcp](https://github.com/jeffkit/hitl-mcp) | Human-in-the-Loop MCP（微信 / 企微确认） |
 | [agently-mail-client](https://github.com/jeffkit/agently-mail-client) | 邮箱作为 Agent 通信通道 |
 | [recursive](https://github.com/jeffkit/recursive) | Rust ReAct 编码 Agent 平台 |
@@ -33,7 +33,7 @@ AI Agent **基础设施逻辑大仓** — 用 [monarbor](https://pypi.org/projec
 | [deepseek-harness](https://github.com/jeffkit/deepseek-harness) | DeepSeek Harness 上游 pristine 镜像（master 跟随 upstream，不改源码） |
 | [dsh-lavs-integration](https://github.com/jeffkit/dsh-lavs-integration) | DSH 仓外插件集：经官方 profile+bundle 挂载 LAVS host 适配与右栏视图 tab，零上游改动 |
 | [tunely](https://github.com/jeffkit/tunely) | WebSocket 反向代理隧道：内网服务经公网 HTTPS 可达 |
-| [monarbor](https://github.com/jeffkit/monarbor) | **本大仓自身的命令行工具**：一个 `mona.yaml` 管全部子仓（list/status/clone/pull/exec/checkout） |
+| [monarbor](https://github.com/jeffkit/monarbor) | **本大仓自身的命令行工具**：一个 `mona.yaml` 管全部子仓（list/status/clone/pull/exec/checkout/init/add/local） |
 
 分层与依赖关系见架构文档；**清单以 [`mona.yaml`](./mona.yaml) 为准**（本表须与其保持同步，当前 21 个子仓，含大仓工具 monarbor 自身）。
 
@@ -42,12 +42,12 @@ AI Agent **基础设施逻辑大仓** — 用 [monarbor](https://pypi.org/projec
 ## 快速开始
 
 ```bash
-# 安装 monarbor
-pip install monarbor
-
-# 克隆本仓后，按 mona.yaml 拉齐所有子仓
+# 安装 monarbor（注意：上游 PyPI 0.4.0 仍含 list 崩溃缺陷，修复只在本仓子仓 monarbor/）
 git clone git@github.com:jeffkit/infra4agent.git
 cd infra4agent
+git clone git@github.com:jeffkit/monarbor.git   # 先拉修复版工具
+pipx install ./monarbor
+
 monarbor clone -b prod          # 多数子仓目前用 main
 # 或：monarbor clone -b prod --jobs 4
 
@@ -55,7 +55,7 @@ monarbor status                 # 分支 / 脏检查 / 同步（推荐）
 monarbor pull                   # 更新已 clone 的子仓
 ```
 
-> ⚠️ 已知缺陷：`monarbor list`（及 `list -r`）在本仓**必然崩溃**——子仓 `deepseek-harness` 的 `vendor/cordis` 与 `vendor/include` 互为软链，嵌套大仓扫描跟随该软链环递归到路径超长（`OSError: [Errno 63] File name too long`）；monarbor 0.3.0 与 0.4.0 均未修复。请用 `monarbor status` 代替，详见 [`docs/MONARBOR_NOTES.md`](./docs/MONARBOR_NOTES.md)。
+> ~~已知缺陷~~ **已修复（2026-09）**：`monarbor list` 曾因 `deepseek-harness` 的 vendor 软链环崩溃（`OSError: [Errno 63]`），monarbor 0.3.0/0.4.0 上游均未修；修复已落在本仓子仓 `monarbor/`（不跟软链 + 剪枝依赖目录 + 深度上限 + `list_repos` 传排除集，含 8 个回归测试）。**上游 PyPI 版仍含缺陷**——本机用 `pipx install <本仓路径>/monarbor` 安装，勿直接 `pip install monarbor`。根因与影响面见 [`docs/MONARBOR_NOTES.md`](./docs/MONARBOR_NOTES.md)。
 
 添加子仓：
 
@@ -81,7 +81,7 @@ infra4agent/
 └── docs/
     ├── ARCHITECTURE.md            # 分层架构与依赖（必读）
     ├── DOC_CODE_MAP.md            # 文档 ↔ 配置映射
-    ├── MONARBOR_NOTES.md          # monarbor 已知缺陷与应对（list 崩溃）
+    ├── MONARBOR_NOTES.md          # monarbor 软链环崩溃根因与修复记录
     ├── LAVS_AGENT_SOP.md          # LAVS View 标准操作流程
     ├── ADR-2026-08-27-orchestration-converge-on-plaita.md  # 编排收敛决议
     ├── ADR-2026-09-06-dsh-pure-plugin-form.md              # DSH×LAVS 纯插件形态决议

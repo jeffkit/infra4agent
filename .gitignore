@@ -20,6 +20,7 @@
 /tunely/
 /recursive-providers/
 /monarbor/
+/dsh-ios/
 
 # monarbor 本地覆盖
 mona.local.yaml
@@ -34,4 +35,5 @@ mona.local.yaml
 # ZCode 本地 session 临时文件（skill 等团队共享资源仍入库）
 .zcode/plans/
 .zcode/sessions/
-.zcode/
+.zcode/*
+!.zcode/skills/
