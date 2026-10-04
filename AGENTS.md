@@ -25,11 +25,14 @@
 - `.gitignore` — 排除本地子仓 clone
 - `docs/ARCHITECTURE.md` — 分层图与依赖边
 - `docs/DOC_CODE_MAP.md` — 文档映射
+- `docs/ISSUE_FILING_GUIDE.md` — **提 issue 须知**（优先级 / `depends-on` / 证据 / 验收约定；issue-keeper 按正文排期，提报前必读）
 - `<子仓>/AGENTS.md` — 入仓后读这里（clone 后才有）
 
 ## 开发约定
 
 **分支策略：** 大仓 `main`；子仓分支见 mona.yaml（多数为 main）。
+
+**提 issue：** 任何 agent 向子仓提报 issue 必须遵守 `docs/ISSUE_FILING_GUIDE.md`——正文头部的 `优先级 **Px**` + 字面量 `depends-on: #N` 是 issue-keeper 排期与依赖门的输入；缺了会卡单或乱序。修复落地后由提报方按该文「代码级验收」条款验收（读修复 diff 逐点核对，可跑测试优先实跑）。
 
 **禁止事项：**
 - 禁止把子仓源码提交进本仓（必须保持 gitignore）
@@ -66,5 +69,6 @@ monarbor 自身也登记为本仓子仓 `monarbor/`（改工具逻辑就在那�
 |------|------|
 | `README.md` | 人类向快速开始 |
 | `docs/ARCHITECTURE.md` | 依赖与典型链路（必读） |
+| `docs/ISSUE_FILING_GUIDE.md` | 提 issue 须知（keeper 管线协作约定，提报前必读） |
 | `mona.yaml` | 权威子仓清单 |
 | 各子仓 `AGENTS.md` | 仓内导航 |
