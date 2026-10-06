@@ -1,1 +1,0 @@
-{"version":3,"file":"function-executor.d.ts","sourceRoot":"","sources":["../src/function-executor.ts"],"names":[],"mappings":"AAAA;;;;;GAKG;AAEH,OAAO,EACL,eAAe,EACf,gBAAgB,EAGjB,MAAM,SAAS,CAAC;AAEjB;;GAEG;AACH,qBAAa,gBAAgB;IAC3B;;;;;;;OAOG;IACG,OAAO,CACX,OAAO,EAAE,eAAe,EACxB,KAAK,EAAE,OAAO,EACd,OAAO,EAAE,gBAAgB,GACxB,OAAO,CAAC,OAAO,CAAC;IA0DnB;;OAEG;YACW,kBAAkB;CA0BjC"}
