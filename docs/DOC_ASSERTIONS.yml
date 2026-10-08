@@ -1,15 +1,32 @@
 # 文档 ↔ 代码 跨仓事实断言表
 #
 # 来源：2026-10-01 全仓「文档↔代码」审计（docs/DOC_CODE_AUDIT-2026-10-01.md），
-# 把其中机器可校验的跨仓事实沉淀于此，由 `monarbor doctor` 逐条执行：
+# 把其中机器可校验的跨仓事实沉淀于此，设计上由 `monarbor doctor` 逐条执行：
 #
 #     monarbor doctor            # 在大仓根运行；失败即漂移，退出码 1
 #     monarbor doctor --json     # CI 消费
 #
+# ⚠️ 状态：**执行器尚未落地（2026-10-08 复核）**
+#   `monarbor doctor`（含 doctor.py 与 tests/test_doctor.py）并未随子仓 `monarbor` 入库，
+#   `jeffkit/monarbor` 的 main 与全部远端 ref 均无该命令。因此本表当前**不可自动执行**，
+#   只能人工比对；CI 也尚未接入。在 doctor 入库并接入前，请勿把"本表全绿"当作验收依据。
+#   旁证：本表曾引用 `monarbor/tests/test_nested_scan_safety.py`，而该文件至今不存在
+#   （说明本表从未在真实树上跑过）；该引用已随本次勘误移除。
+#
+# ⚠️ 已知失败条目（2026-10-08 人工离线比对，非 doctor 输出）
+#   本表 47 条中，离线可判定的 36 条里有 4 条在真实树上失败——它们对应的"修复"
+#   同样未推送（见 DOC_CODE_AUDIT-2026-10-01.md 顶部修订注记）：
+#     * im-agentproc/readme-no-only-ilink   → README.md:61 仍写 "iLink is the only real adapter today"
+#     * hil-mcp/readme-no-uvx-hil           → README.md:24 仍写 `uvx hil-mcp`（PyPI 包名实为 hitl-mcp）
+#     * hil-mcp/agents-no-uvx-hil           → AGENTS.md:20,31 同上
+#     * marketplace/readme-23-not-11        → README.md:17 仍写「MCP 工具（11 个）」，实际 23 个
+#   这 4 条是**真实的文档漂移**，修好子仓文档后即转绿；不要为了"全绿"而放宽断言。
+#
 # 维护约定（对应 ARCHITECTURE §9）：
 #   * 改跨仓依赖边 / 改文档声称的计数 / 修复某条漂移时，同步更新本表；
 #   * 每条断言 id = <repo>/<claim>，desc 写"人话"，方便失败时定位；
-#   * 只放「机器可校验」的事实；叙事类漂移走 .zcode/skills/doc-audit 周期审计。
+#   * 只放「机器可校验」的事实；叙事类漂移走 .zcode/skills/doc-audit 周期审计
+#     （该 skill 亦尚未落地，见 ARCHITECTURE §9 注）。
 
 version: 1
 
@@ -32,14 +49,14 @@ assertions:
     file: docs/ARCHITECTURE.md
     pattern: '^\| `[a-z0-9-]+` \|[^|\n]+\|[^|\n]+\|'
 
-  - id: root/readme-no-stale-list-crash
-    desc: 'README 不再声称 monarbor list 必然崩溃（已修复）'
+  - id: root/readme-no-false-monarbor-fix
+    desc: 'README 不得以肯定语气声称 monarbor 的 list 崩溃已修复（2026-10-08 复核：修复未入库）；引用旧措辞做勘误说明不算违规'
     check: regex_not_contains
     file: README.md
-    pattern: 必然崩溃
+    pattern: '\*\*已修复（2026-09）\*\*|修复已落在本仓子仓'
 
   - id: root/readme-pipx-bootstrap
-    desc: 'README 快速开始用 pipx 从子仓路径安装修复版 monarbor'
+    desc: 'README 快速开始保留 pipx 从子仓路径安装 monarbor 的方式（注：该方式装的同样是未修缺陷的 0.4.0）'
     check: regex_contains
     file: README.md
     pattern: pipx install \./monarbor
@@ -289,15 +306,27 @@ assertions:
     pattern: X-Admin-API-Key
 
   # ── 大仓工具 ─────────────────────────────────────────────
-  - id: monarbor/scan-safety-regression-8
-    desc: '软链环加固恰有 8 个回归测试（MONARBOR_NOTES 口径）'
-    check: regex_count
-    file: monarbor/tests/test_nested_scan_safety.py
-    pattern: '^def test_'
-    equals: 8
+  # ⚠️ 2026-10-08 复核：子仓 monarbor 的修复（不跟软链 + 剪枝 + 深度上限 +
+  #    list_repos 传 exclude_paths + 8 个回归测试 + doctor）**均未入库**，
+  #    详见 MONARBOR_NOTES.md §0。原 `monarbor/scan-safety-regression-8`
+  #    断言依赖的 tests/test_nested_scan_safety.py 至今不存在，故停用；
+  #    待修复真正入库后，取消注释并恢复该断言。
+  #
+  # - id: monarbor/scan-safety-regression-8
+  #   desc: '软链环加固恰有 8 个回归测试（MONARBOR_NOTES 口径）'
+  #   check: regex_count
+  #   file: monarbor/tests/test_nested_scan_safety.py
+  #   pattern: '^def test_'
+  #   equals: 8
+
+  - id: monarbor/list-defect-not-yet-fixed
+    desc: '哨兵：monarbor list_repos 仍漏传 exclude_paths（缺陷 B 未修）；修复入库后本条会失败，届时请同步 README/ARCHITECTURE/MONARBOR_NOTES 的状态表述'
+    check: regex_contains
+    file: monarbor/monarbor/cli.py
+    pattern: 'nested = find_nested_monorepos\(config\.root\)'
 
   - id: monarbor/version-0_4_0
-    desc: 'monarbor 版本 0.4.0（修复基线，MONARBOR_NOTES 口径）'
+    desc: 'monarbor pyproject 版本 0.4.0（注：包内 __version__ 仍为 0.3.0，漂移未修）'
     check: regex_contains
     file: monarbor/pyproject.toml
     pattern: '^version = "0\.4\.0"'

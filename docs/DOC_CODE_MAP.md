@@ -1,6 +1,6 @@
 # 文档 ↔ 代码映射
 
-> 最后更新：2026-10-01
+> 最后更新：2026-10-08（monarbor 行勘误：修复未入库，见 `MONARBOR_NOTES.md` §0）
 
 大仓根只管理配置与导航文档；子仓源码在各自 git 仓库中（见 `.gitignore`）。
 
@@ -20,7 +20,7 @@
 
 | 文档 | 代码路径模式 | 说明 |
 |------|----------------|------|
-| `docs/MONARBOR_NOTES.md` | `monarbor/monarbor/{config,cli}.py`、`monarbor/tests/test_nested_scan_safety.py` | monarbor 的软链环崩溃档案：根因（不剪枝 + 跟随软链 + `list_repos` 漏传 `exclude_paths`）、影响面矩阵、复现与**修复记录**（0.3.0/0.4.0 与上游均未修，修复落在大仓子仓 `monarbor/`） |
+| `docs/MONARBOR_NOTES.md` | `monarbor/monarbor/{config,cli}.py` | monarbor 的软链环崩溃档案：根因（不剪枝 + 跟随软链 + `list_repos` 漏传 `exclude_paths`）、影响面矩阵、复现，以及**尚未入库**的修复方案（0.3.0/0.4.0 与子仓 `main` 均未修——据该文 §0 勘误，早期声称的回归测试文件与 doctor 命令实际都不存在） |
 | `monarbor`（子仓） | `monarbor/monarbor/*.py`, `monarbor/tests/*.py` | 本大仓自身的 CLI 工具；按 `mona.yaml` 管理全部子仓。pipx 从该路径安装 |
 | `docs/docker-build-speedup.md` | `recursive/docs/e2e-docker-build-speedup.md`（实战记录） | 语言无关的 Docker 构建提速方法论：依赖层分离、diff-scope 短路、跨 worktree 缓存共享；提炼自 recursive 实战，各语言（Rust/Go/Node/Python/Java）模板 |
 | `docs/self-improve-review-prompt.md` | `.zcode/skills/self-improve-{cycle,supervise}`（symlink → `recursive/.zcode/skills/`） | self-improve 周期审查使用指南：触发方式（`/self-improve-cycle` skill / 定时 cron）、深度模式、并发规则、经验沉淀机制；历史战绩见文末 |
