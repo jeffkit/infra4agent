@@ -5,6 +5,19 @@
 > 方法：12 组并行审计（多子智能体 + 人工复核）。全部为只读静态核验：文档声明逐条对照清单文件（package.json / pyproject / Cargo.toml）、源码入口、目录结构、git 状态；未运行构建与测试。
 > 评分口径：10 = 文档可直接当导航事实用；8-9 = 个别行滞后；6-7 = 局部章节失真；≤5 = 大面积失真。
 
+> **修订注记（2026-10-08，只追加、不改写本报告原结论）**
+>
+> **一、§六「修复落地记录」不可作为"已落地"证据。** 该表列出的 14 个子仓提交，经对各自远端 `main` 复核，**只有 4 个真实存在**：agentproc `10e342b`、web-bridge `9c7a942`、issue-keeper `c764b62`、tunely `00a8e0e`。其余 **10 个在对应仓的任何 ref 中都不存在**：
+>
+> - 5 个仓在审计日之后根本没有新提交，该提交不可能已推送：**hil-mcp**（HEAD 2026-09-16）、**flowcast**（08-15）、**argusai-marketplace**（07-24）、**monarbor**（04-16）、**agently-mail-client**（07-31）。
+> - 另 5 个仓 HEAD 晚于审计日，但至少其中两个的修复**内容**经核验确实缺失：**im-agentproc**（`README.md:61` 仍写 "iLink is the only real adapter today"）、**recursive-providers**（仍无 LICENSE 文件）。**ilink-hub / browser-bridge / dsh-lavs-integration** 的对应措辞已被其它提交带入或本就未漂移，未逐条判定。
+>
+> **二、§七「防漂移机制」未落地，且 §六 所称「47/47 通过」不成立。** `monarbor doctor`（含 `doctor.py`、`tests/test_doctor.py`）未随子仓入库，`.zcode/skills/doc-audit` 也不存在，故断言表当前不可自动执行。2026-10-08 人工离线比对 `docs/DOC_ASSERTIONS.yml`：离线可判定的 36 条中 **4 条失败**——`im-agentproc/readme-no-only-ilink`、`hil-mcp/readme-no-uvx-hil`、`hil-mcp/agents-no-uvx-hil`、`marketplace/readme-23-not-11`，恰好都是上述未推送的文档修复项。
+>
+> **三、§3.21 对 monarbor 的 9/10 评分**是基于当时另一台机器的本地工作树——提交 `0fc706c`/`debe366` 不是合法 git 对象，`tests/test_nested_scan_safety.py` 与 `doctor.py` 不存在，测试函数总数仍为 58，`__version__` 仍为 0.3.0。该结论**只对那份本地树成立，对仓库不成立**；其真实状态以 [MONARBOR_NOTES.md](./MONARBOR_NOTES.md) §0 为准。
+>
+> 报告其余内容为 2026-10-01 的历史记录，保持原样不动；上述未落地的子仓文档修复仍需在各子仓重新提交。
+
 ## 一、总览
 
 **全大仓加权平均 ≈ 8.0/10**。梯队分布：9 分档 7 仓（文档-代码同步做得最好的是 monarbor / deepseek-harness / dsh-lavs-integration / argusai / plaita-nodes / recursive-providers / browser-bridge）；8 分档 7 仓；7 分档 4 仓；**6 分以下 3 仓：flowcast 6.5、mediaflow 6、hil-mcp 5（全大仓最失步）**。大仓根级文档 8/10（9/28 大对齐基本有效，但 README 的 monarbor 警示与 mona.yaml 三处描述仍滞后）。

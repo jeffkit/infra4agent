@@ -42,20 +42,24 @@ AI Agent **基础设施逻辑大仓** — 用 [monarbor](https://pypi.org/projec
 ## 快速开始
 
 ```bash
-# 安装 monarbor（注意：上游 PyPI 0.4.0 仍含 list 崩溃缺陷，修复只在本仓子仓 monarbor/）
+# 方式 A：不依赖工具，直接拉全部子仓（当前推荐——monarbor 的两个缺陷尚未修复，见下方提示）
 git clone git@github.com:jeffkit/infra4agent.git
 cd infra4agent
-git clone git@github.com:jeffkit/monarbor.git   # 先拉修复版工具
+grep -E '^(- path:|  repo_url:)' mona.yaml | sed 's/^[^:]*: *//' | paste - - | \
+  while read -r path url; do git clone "$url" "$path"; done
+
+# 方式 B：装 monarbor 后统一管理（可 clone/status/pull/exec 全套）
+git clone git@github.com:jeffkit/monarbor.git
 pipx install ./monarbor
 
-monarbor clone -b prod          # 多数子仓目前用 main
-# 或：monarbor clone -b prod --jobs 4
-
+monarbor clone -b prod --jobs 4 # 多数子仓目前用 main
 monarbor status                 # 分支 / 脏检查 / 同步（推荐）
 monarbor pull                   # 更新已 clone 的子仓
 ```
 
-> ~~已知缺陷~~ **已修复（2026-09）**：`monarbor list` 曾因 `deepseek-harness` 的 vendor 软链环崩溃（`OSError: [Errno 63]`），monarbor 0.3.0/0.4.0 上游均未修；修复已落在本仓子仓 `monarbor/`（不跟软链 + 剪枝依赖目录 + 深度上限 + `list_repos` 传排除集，含 8 个回归测试）。**上游 PyPI 版仍含缺陷**——本机用 `pipx install <本仓路径>/monarbor` 安装，勿直接 `pip install monarbor`。根因与影响面见 [`docs/MONARBOR_NOTES.md`](./docs/MONARBOR_NOTES.md)。
+> ⚠️ **monarbor 的 `list` 崩溃缺陷尚未修复（2026-10-08 复核）**：`monarbor list` 会因 `deepseek-harness` 的 vendor 软链环崩溃（`OSError: [Errno 63] File name too long`）。该缺陷在 **PyPI 0.4.0 与子仓 `monarbor/` 的 `main` 中均完整存在**——此前"已修复（2026-09）"的说法与仓库实际不符，修复方案只停留在 [`docs/MONARBOR_NOTES.md`](./docs/MONARBOR_NOTES.md) §6，从未提交进任何远端 ref。
+>
+> 现状与规避：① `list` / `list -r` 会崩，`status` / `pull` / `clone` / `exec` 不受影响；② 崩溃是**潜伏**的，仅在 `deepseek-harness/` 装过依赖（出现 `node_modules` 软链环）后才显现，干净 clone 上跑一遍不崩不代表无缺陷；③ 在修复入库前，优先用上面的方式 A，或避开 `monarbor list`。根因、影响面矩阵与待实施的修复方案见 [`docs/MONARBOR_NOTES.md`](./docs/MONARBOR_NOTES.md)。
 
 添加子仓：
 
@@ -81,8 +85,8 @@ infra4agent/
 └── docs/
     ├── ARCHITECTURE.md            # 分层架构与依赖（必读）
     ├── DOC_CODE_MAP.md            # 文档 ↔ 配置映射
-    ├── MONARBOR_NOTES.md          # monarbor 软链环崩溃根因与修复记录
-    ├── DOC_ASSERTIONS.yml         # 跨仓「文档↔代码」事实断言表（monarbor doctor 消费）
+    ├── MONARBOR_NOTES.md          # monarbor 软链环崩溃：根因分析 + 待实施修复方案（未入库）
+    ├── DOC_ASSERTIONS.yml         # 跨仓「文档↔代码」事实断言表（执行器 monarbor doctor 未落地，当前不可运行）
     ├── LAVS_AGENT_SOP.md          # LAVS View 标准操作流程
     ├── ADR-2026-08-27-orchestration-converge-on-plaita.md  # 编排收敛决议
     ├── ADR-2026-09-06-dsh-pure-plugin-form.md              # DSH×LAVS 纯插件形态决议

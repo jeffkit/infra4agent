@@ -43,10 +43,13 @@
 ## 常用命令
 
 ```bash
-# 安装修复版工具（上游 PyPI 0.4.0 仍含 list 崩溃缺陷，修复只在子仓 monarbor/）
+# 未装工具时，直接按 mona.yaml 拉全部子仓（推荐：monarbor 的 list 缺陷尚未修复，见下）
+grep -E '^(- path:|  repo_url:)' mona.yaml | sed 's/^[^:]*: *//' | paste - - | \
+  while read -r path url; do git clone "$url" "$path"; done
+
+# 或装 monarbor 统一管理（PyPI 0.4.0 与子仓 main 均含 list 崩溃缺陷，未修复）
 git clone git@github.com:jeffkit/monarbor.git && pipx install ./monarbor
-monarbor list
-monarbor status
+monarbor status                 # list / list -r 会崩；status/pull/clone/exec 正常
 monarbor clone -b prod --jobs 4
 monarbor pull
 monarbor add --path <p> --name "<n>" --url <git-url> \
@@ -54,8 +57,8 @@ monarbor add --path <p> --name "<n>" --url <git-url> \
 ```
 
 monarbor 自身也登记为本仓子仓 `monarbor/`（改工具逻辑就在那里改并提交）。本机经 pipx 从该路径安装；
-`monarbor list` 曾因 deepseek-harness 软链环崩溃，**已修复**（不跟软链 + 剪枝 + 深度上限，含 8 个回归测试），
-根因与影响面见 `docs/MONARBOR_NOTES.md`。
+`monarbor list` 会因 deepseek-harness 软链环崩溃（`OSError [Errno 63]`）——**缺陷 A/B 至今未修**，
+修复方案只记录在 `docs/MONARBOR_NOTES.md` §6、**未入库**；修复落地前请避开 `monarbor list`。
 
 改子仓：`cd <path>` 后在该 git 仓内提交；大仓只提交配置/文档变更。
 
