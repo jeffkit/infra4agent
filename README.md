@@ -29,13 +29,12 @@ AI Agent **基础设施逻辑大仓** — 用 [monarbor](https://pypi.org/projec
 | [argusai](https://github.com/jeffkit/argusai) | 配置驱动的 Docker E2E + MCP |
 | [argusai-marketplace](https://github.com/jeffkit/argusai-marketplace) | ArgusAI 的 Claude Code Plugin 分发 |
 | [issue-keeper](https://github.com/jeffkit/issue-keeper) | Issue 监控 → 安全过滤 → Agent 回复 |
-| [mediaflow](https://github.com/jeffkit/mediaflow) | KONG 全自动化自媒体运营系统（Flowcast 编排：公众号全自动 / 小红书半自动 / MiniMax 视频） |
 | [deepseek-harness](https://github.com/jeffkit/deepseek-harness) | DeepSeek Harness 上游 pristine 镜像（master 跟随 upstream，不改源码） |
 | [dsh-lavs-integration](https://github.com/jeffkit/dsh-lavs-integration) | DSH 仓外插件集：经官方 profile+bundle 挂载 LAVS host 适配与右栏视图 tab，零上游改动 |
 | [tunely](https://github.com/jeffkit/tunely) | WebSocket 反向代理隧道：内网服务经公网 HTTPS 可达 |
 | [monarbor](https://github.com/jeffkit/monarbor) | **本大仓自身的命令行工具**：一个 `mona.yaml` 管全部子仓（list/status/clone/pull/exec/checkout/init/add/local） |
 
-分层与依赖关系见架构文档；**清单以 [`mona.yaml`](./mona.yaml) 为准**（本表须与其保持同步，当前 21 个子仓，含大仓工具 monarbor 自身）。
+分层与依赖关系见架构文档；**清单以 [`mona.yaml`](./mona.yaml) 为准**（本表须与其保持同步，当前 20 个子仓，含大仓工具 monarbor 自身）。
 
 ---
 

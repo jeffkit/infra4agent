@@ -38,3 +38,9 @@ mona.local.yaml
 .zcode/sessions/
 .zcode/*
 !.zcode/skills/
+
+# 本地草稿/脚本/产物目录（含凭据样式文件，不入库）
+/local/
+
+# 独立 git 仓库（未登记 mona.yaml，不入大仓）
+/dsh-web-bridge-integration/

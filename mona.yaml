@@ -33,7 +33,7 @@ repos:
   - Playwright
   - MCP
   branches:
-    dev: develop
+    dev: main
     test: release/test
     prod: main
 - path: argusai-marketplace
@@ -62,7 +62,7 @@ repos:
   - MCP
   - SQLAlchemy
   branches:
-    dev: develop
+    dev: main
     test: release/test
     prod: main
 - path: lavs
@@ -207,24 +207,6 @@ repos:
   - WebSocket
   - pnpm workspace
   - vitest
-  branches:
-    dev: main
-    test: main
-    prod: main
-- path: mediaflow
-  name: MediaFlow
-  repo_url: git@github.com:jeffkit/mediaflow.git
-  description: KONG 全自动化自媒体运营系统：plaita 编排创意→文案→配图/视频→审核→多平台发布
-    （ADR-2026-08-27 全量迁移，plaita_flows/ 为权威，flowcast 版仅回退）。公众号走官方 API 全自动、
-    小红书走 browser 半自动、视频走 MiniMax。依赖 plaita/plaita-nodes/agentproc（editable 兄弟仓）、
-    flowcast（回退）/hil-mcp。
-  tech_stack:
-  - Node.js
-  - Flowcast
-  - WeChat-API
-  - browser-use
-  - MiniMax
-  - plaita
   branches:
     dev: main
     test: main
