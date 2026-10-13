@@ -112,3 +112,55 @@ git cherry-pick --no-commit 4f0c4da  → ✅ 干净应用
 且实测可干净应用、零冲突。AGS 本体则先做"是否纳入主线"的决策，
 再按 rebase（保 #5 安全语义）→ 补 conformance → 补 #15 验收 三步走。
 另需同时修掉"checkout 在分支、安装物在 site-packages"这个部署不一致，否则合了也白合。**
+
+---
+
+## 六、第一批**已落地**（2026-10-13 11:25）
+
+```
+plaita-nodes  origin/main:  b409a66 → 48d087e
+  298b89c  fix(agent_run): recursive build_args 签名落后于 agentproc
+  48d087e  fix(agent_run)!: agentproc 路径缺 cwd
+改动面：src/plaita_nodes/agent_run.py，+26 / -2（单文件）
+```
+
+### 验证（负向对照先行 + 失败集差异比较）
+
+**① 缺陷确实存在于 main**（还原源码即重现）：
+
+```
+main      : def build_args(message, session_id, env)         ← 3 参
+agentproc : def build_args(message, session_id, env, _ctx)   ← 4 参 ⇒ 失配
+main 的 cwd=str(repo) 出现次数：0                             ← agentproc 路径漏传
+```
+
+**② 失败集比较**（同一套测试，基线 vs 修复后）：
+
+| | 失败数 |
+|---|---|
+| `origin/main`（未改动） | **13** |
+| 摘入两个修复后 | **10** |
+
+```
+我修好的（基线红 → 修复后绿）：
+  ✓ test_agent_run.py::test_recursive_usage_fallback_from_parsed
+  ✓ test_agent_run.py::test_details_mode_collects_observations
+  ✓ test_agent_run.py::test_details_false_has_no_observations_key
+
+我引入的（基线绿 → 修复后红）：
+  （空）—— 零回归
+```
+
+**③ 剩余 10 个失败与本次改动无关**（基线同样失败），根因是**环境限制**：
+```
+agentproc.run_lock.RunLockBusy: …遗言锁指向存活 pid，但身份无法核实（ps 不可用）
+```
+⇒ 沙箱内 `ps` 不可用，属**执行环境**问题，不是代码缺陷；CI（GitHub runner）上 `ps` 可用。
+
+**⇒ 净效果：-3 失败、0 回归。**
+
+### 顺手确认
+
+- 推前核对 `origin/main` 仍是 `b409a66`（无人推进），**非 force push**；
+- 改动**只碰 `agent_run.py`**，未触及 gate / 沙箱 / 任何 AGS 相关文件
+  ⇒ **不作为第二批的预判**，AGS 仍需独立决策。
