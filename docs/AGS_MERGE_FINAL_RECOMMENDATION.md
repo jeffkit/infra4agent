@@ -164,3 +164,86 @@ agentproc.run_lock.RunLockBusy: …遗言锁指向存活 pid，但身份无法�
 - 推前核对 `origin/main` 仍是 `b409a66`（无人推进），**非 force push**；
 - 改动**只碰 `agent_run.py`**，未触及 gate / 沙箱 / 任何 AGS 相关文件
   ⇒ **不作为第二批的预判**，AGS 仍需独立决策。
+
+---
+
+## 七、第 1-2 步**已完成**（2026-10-13 12:10）
+
+用户批准后按建议执行："先拆 → 再 rebase"。
+
+### 步骤 1：拆分（控制面移出通用仓）
+
+| | 结果 |
+|---|---|
+| `plaita-nodes` `sandbox_reaper.py` | **198 → 138 行**（删 60） |
+| 移出 | `build_storage`（唯一的 `from plaita.storage.redis`）+ `main` + argparse/time |
+| 保留 | `_parse_ts` / `decide` / `reap_one` / `run_cycle` / `enumerate_resources` |
+| 验证 | 拆分后 `grep -c "from plaita"` = **0**；4 个公开符号可导入 |
+| **回归** | **失败集逐条 diff 为空**（12 failed / 266 passed 两边完全相同） |
+
+**plaita 侧新增** `scripts/reap_sandboxes.py`（`77fb656`，已入 main）：
+端到端实跑 `--dry-run --drivers docker` → 枚举 2 资源、`reap-unknown`、不动作；
+`ci-gate.sh` **PASSED**（coverage 96.68%）。
+
+### 步骤 2：rebase 到 main
+
+```
+29 个提交重放，2 处冲突（均在 gate.py），均已解决
+```
+
+**冲突 1（预测中的那个）**：
+```
+<<< main:        env = build_subprocess_env()          ← #5 的 env 白名单
+>>> branch:      沙箱分支 + env = os.environ.copy()     ← 旧的不安全形态
+```
+⇒ **解决：两者都留** —— 沙箱分支保留，`env` 用 `build_subprocess_env()`。
+
+**冲突 2**：import 与 `_log = logging.getLogger(...)` 同位置 ⇒ 两者都留。
+
+### ⚠ 冲突解决中我**真的犯了一次错，且被测试抓住**
+
+解决冲突 1 时我漏了**第二处**：main 的 `#5` 把 `_clip_tail` 抽成了公共层
+`clip_output`，而分支的**沙箱返回路径**仍在调 `_clip_tail`
+⇒ **`NameError: name '_clip_tail' is not defined`**。
+
+**是 `test_gate_output_tail.py` 的两个用例抓到的**（`test_gate_sandbox_branch_dispatches_to_driver`
+/ `test_gate_sandbox_uses_root_execution_id_inside_childflow`）。
+
+**⇒ 这正是"冲突处要保持双方语义都在"的典型反例**：
+我以为改了一处就够了，**实际同一语义在文件里有两处调用点**。
+已改用 `clip_output`，10 个 gate 用例全绿。
+
+### 最终验证：**rebase 零回归**（可复现的判据）
+
+```
+分支基线(rebase 前)      12 failed
+rebase 后                15 failed
+差异                     3 个 —— 全部【在 main 基线上本来就失败】
+仍无法解释的               （空）
+```
+
+那 3 个是 `test_subprocess_env_isolation` / `test_agent_host_run_guard`
+的用例，**在未改动的 main 上同样失败**（根因同前：沙箱内 `ps` 不可用，环境限制）。
+
+**#5 的安全语义经独立确认仍在位**：
+```
+gate.py:  env = build_subprocess_env()        ← 在执行路径上
+          clip_output 调用 2 处，_clip_tail 调用 0 处
+```
+
+### 当前状态
+
+```
+plaita-nodes  main   48d087e
+              branch 08beef1（已 rebase 到 main，领先 29 提交）
+plaita        main   77fb656（含新入口 scripts/reap_sandboxes.py）
+```
+
+### 剩余步骤
+
+- **步 3**：AGS 进 conformance（`ALL_DRIVERS` 目前只有 docker/krunvm）+ 真沙箱 smoke
+  —— 这是补"关键路径零真实验证"的最大缺口；
+- **步 4**：补 `plaita-nodes#15` 验收（`sync_in` 自愈**或**有界 fail-closed，bound 由测试断言）；
+- **另**：`sandbox_ags` 缺 `enumerate_workspaces` ⇒ AGS 孤儿不被 reaper 回收（第二部分已记）；
+- **另**：VM `tcloud_gz` 的"checkout 在分支、安装物是 0.8.0"不一致仍在
+  ⇒ **该机当前跑不了 AGS**，与"入不入主线"独立。
