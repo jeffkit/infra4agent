@@ -20,7 +20,6 @@
 /tunely/
 /recursive-providers/
 /monarbor/
-/dsh-ios/
 
 # monarbor 本地覆盖
 mona.local.yaml
@@ -44,3 +43,6 @@ mona.local.yaml
 
 # 独立 git 仓库（未登记 mona.yaml，不入大仓）
 /dsh-web-bridge-integration/
+
+# 值守/评审临时方案（plaita 重投事故评审稿，本地留存不入库）
+/.duty-plan-*.md
