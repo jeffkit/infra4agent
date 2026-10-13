@@ -173,3 +173,61 @@ def run_cycle(storage, resources, *, …, spec_lookup=None, dry_run=False):
 - `main()`（~30 行 argparse CLI）
 
 **其余约 160 行是纯沙箱语义，本来就不该出去。**
+
+---
+
+## 七、拆分方案的可执行性核实（2026-10-13 11:32）
+
+我把"搬走"这件事的具体面核实了一遍，确认它**不是设想，而是可直接执行**：
+
+### 搬走的量：**57 行**（不是 198 行）
+
+```
+build_storage 段   9 行
+main 段           48 行
+                  ─────
+合计              57 行        ← 占 sandbox_reaper.py 的 29%
+```
+
+**留下 5 个纯语义函数**：`_parse_ts` / `decide` / `reap_one` / `run_cycle` / `enumerate_resources`。
+
+### `main()` 只依赖 3 个**公开**符号 ⇒ import 契约干净
+
+```
+main() 里引用到的 plaita-nodes 符号：
+  build_storage
+  enumerate_resources
+  run_cycle
+```
+
+三个都是**无下划线前缀的公开名** ⇒ 可作为稳定契约：
+
+```python
+# plaita 侧（搬移后）
+from plaita_nodes.sandbox_reaper import build_storage, enumerate_resources, run_cycle
+```
+
+**⇒ 搬移后的形态**：
+```
+plaita-nodes  sandbox_reaper.py   decide / reap_one / run_cycle / enumerate_resources / _parse_ts
+                                  （无 plaita import，无 argparse，无 CLI）
+plaita        <新入口>              build_storage(redis_url) + main() + argparse
+                                  from plaita_nodes.sandbox_reaper import …
+```
+
+### 附带确认：`__init__.py` 已导出沙箱 API
+
+```
+src/plaita_nodes/__init__.py:31  from .sandbox import (…)
+                            :46  from .sandbox_ags import AgsClient, AgsDriver, AgsError
+                            :47  from .sandbox_agent import SandboxAgentNode
+```
+
+⇒ 搬移后 plaita 侧**不需要新增导出**，直接 `from plaita_nodes.sandbox_reaper import …` 即可
+（该模块级 import 已在包内可用）。
+
+### 结论
+
+**这次拆分是"删 57 行 + 在 plaita 加 57 行"，不涉及逻辑改动**
+（`run_cycle` 本来就用注入的 `storage`，`build_storage` 本来就是唯一绑定点）。
+**⇒ 风险极低，且能在 merge 之前把边界修正到位，避免 gate.py 的安全冲突解两次。**
