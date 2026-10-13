@@ -227,3 +227,39 @@ wrapper 里 `unset` 代理是**必要**的 —— 但它**不足以**让 python 
 - 根因仍未定位到底，但**已知 python 的两个主流 HTTP 库都失败、curl 与裸 socket 可用**；
 - **下一步**：在 python 里逐层比对与 curl 的差异（HTTP 头顺序、TLS 扩展、socket 选项），
   或直接用 **subprocess 调 curl** 作为务实绕行（sweep 只需 GET 列表）。
+
+---
+
+## 更正之四（08:50）：**找到了可用路径，且它是 stdlib 的**
+
+| 客户端 | 结果（清 proxy，重复采样） |
+|---|---|
+| `curl` | **401** ✅ |
+| **`urllib.request`（stdlib）** | **200 `[]`** ✅ ← **可用** |
+| python 裸 socket + 手写 HTTP/1.1 | 401 ✅ |
+| `httpx` | ❌ 确定性失败 |
+| `requests` | ❌ 确定性失败 |
+
+**⇒ `urllib` 可用**，而它是 python 标准库、**且 `ags-orphan-sweep.py` 本来就已经 import 了它**
+（`import urllib.request` 在第 16 行，用于 `console_exec`）。
+
+**⇒ 结论收窄**：不是"python 不能用"，而是
+**`httpx` / `requests` 这两个库在这台机器上、对该主机的 TLS/HTTP 行为有问题**；
+python 自带的 `ssl` + `urllib` **完全可用**。
+
+### 务实修法（比根因分析更快恢复）
+
+把 `ags-orphan-sweep.py` 里的两处 e2b 调用改成 `urllib` 直连 AGS REST：
+- `Sandbox.list(SandboxQuery(metadata={}))` → `GET /v2/sandboxes`（已验证返回 `[]`）；
+- `Sandbox.kill(sid)` → `DELETE /v2/sandboxes/{id}`（待验证）。
+
+**这只影响"列出/击杀沙箱"两个动作，不改变清理语义**；
+且 `urllib` 是 stdlib，**不引入新依赖**。
+
+### ⚠ 但要先确认一件事
+
+**必须先在 AGS 上验证 `DELETE /v2/sandboxes/{id}` 的行为**（尤其鉴权头与幂等性），
+**不能拿"list 通了"推断"kill 也通"** —— 这正是我这几轮反复犯的错
+（用一次成功推断一个结论）。**kill 的验证要用一个真实或可控的沙箱做**。
+
+在验证 kill 之前，**我只改 list、不动 kill**，或**两者都改但先在 dry-run 下跑**。
