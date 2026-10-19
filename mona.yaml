@@ -311,3 +311,18 @@ repos:
     dev: main
     test: main
     prod: main
+- path: plaita-go
+  name: plaita-go
+  repo_url: git@github.com:jeffkit/plaita-go.git
+  description: plaita 的 Golang 引擎 + worker 运行时：flow 引擎（节点 registry/重试/超时）、plaita
+    表达式求值（$ 变量 + $F 函数，与 Python 版语义 golden 对齐）、部署 IR 契约层（camelCase
+    JSON → 引擎 Workflow，fail-closed 拒载）。定位为引擎+worker，console/keeper 控制面留在
+    Python 侧，按 queue/lease 协议接入。
+  tech_stack:
+  - Go
+  - goval
+  - goja
+  branches:
+    dev: main
+    test: main
+    prod: main
