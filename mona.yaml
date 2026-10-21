@@ -326,3 +326,19 @@ repos:
     dev: main
     test: main
     prod: main
+
+- path: plaita-rs
+  name: plaita-rs
+  repo_url: git@github.com:jeffkit/plaita-rs.git
+  description: plaita 的 Rust 版引擎 + IR 解析（参考 plaita-go 移植）：部署 IR 装载（归一化
+    + R1-R7 校验 + fail-closed 拒载）、plaita 表达式语言（$ 变量 + $F 函数 + {% %} 模板，
+    golden 与 Python 权威对齐）、执行引擎（变量根/条件/循环/并行/子流程/重试·超时·错误策略/
+    事件回调）与内置节点（python sidecar、http）。只做「解析并运行 Flow」的运行时，worker/
+    队列/租约层不在范围；agentrun 与 plaita-nodes 节点族未移植（加载期 fail-closed）。
+  tech_stack:
+  - Rust
+  - serde_json
+  branches:
+    dev: main
+    test: main
+    prod: main
