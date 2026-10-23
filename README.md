@@ -23,6 +23,7 @@ AI Agent **基础设施逻辑大仓** — 用 [monarbor](https://pypi.org/projec
 | [flowcast](https://github.com/jeffkit/flowcast) | Node workflow 编排（断点续跑 / HITL / L3 codegen） |
 | [plaita](https://github.com/jeffkit/plaita) | Python 逻辑编排运行时（JSON / `@flow`） |
 | [plaita-nodes](https://github.com/jeffkit/plaita-nodes) | plaita 通用节点集（AgentRun / Capture / Hitl / Notify / WriteFile） |
+| [plaita-go](https://github.com/jeffkit/plaita-go) | plaita 的 Golang 引擎 + worker 运行时（表达式求值与 Python 版语义 golden 对齐） |
 | [lavs](https://github.com/jeffkit/lavs) | Local Agent View：Agent ↔ 可视化 UI 协议 |
 | [web-bridge](https://github.com/jeffkit/web-bridge) | 注入式 DOM/a11y 桥：Agent 操控 Electron/Tauri 页面 |
 | [browser-bridge](https://github.com/jeffkit/browser-bridge) | 浏览器扩展（Chromium/Firefox）+ MCP gateway：远程 Agent 操控本地真实浏览器 |
@@ -34,14 +35,14 @@ AI Agent **基础设施逻辑大仓** — 用 [monarbor](https://pypi.org/projec
 | [tunely](https://github.com/jeffkit/tunely) | WebSocket 反向代理隧道：内网服务经公网 HTTPS 可达 |
 | [monarbor](https://github.com/jeffkit/monarbor) | **本大仓自身的命令行工具**：一个 `mona.yaml` 管全部子仓（list/status/clone/pull/exec/checkout/init/add/local） |
 
-分层与依赖关系见架构文档；**清单以 [`mona.yaml`](./mona.yaml) 为准**（本表须与其保持同步，当前 20 个子仓，含大仓工具 monarbor 自身）。
+分层与依赖关系见架构文档；**清单以 [`mona.yaml`](./mona.yaml) 为准**（本表须与其保持同步，当前 21 个子仓，含大仓工具 monarbor 自身）。
 
 ---
 
 ## 快速开始
 
 ```bash
-# 方式 A：不依赖工具，直接拉全部子仓（当前推荐——monarbor 的两个缺陷尚未修复，见下方提示）
+# 方式 A：不依赖工具，直接拉全部子仓（无需安装任何东西；monarbor 路线见方式 B）
 git clone git@github.com:jeffkit/infra4agent.git
 cd infra4agent
 grep -E '^(- path:|  repo_url:)' mona.yaml | sed 's/^[^:]*: *//' | paste - - | \
@@ -56,9 +57,9 @@ monarbor status                 # 分支 / 脏检查 / 同步（推荐）
 monarbor pull                   # 更新已 clone 的子仓
 ```
 
-> ⚠️ **monarbor 的 `list` 崩溃缺陷尚未修复（2026-10-08 复核）**：`monarbor list` 会因 `deepseek-harness` 的 vendor 软链环崩溃（`OSError: [Errno 63] File name too long`）。该缺陷在 **PyPI 0.4.0 与子仓 `monarbor/` 的 `main` 中均完整存在**——此前"已修复（2026-09）"的说法与仓库实际不符，修复方案只停留在 [`docs/MONARBOR_NOTES.md`](./docs/MONARBOR_NOTES.md) §6，从未提交进任何远端 ref。
+> **monarbor 的 `list` 崩溃缺陷：修复已于 2026-10-23 入库子仓 `main`**（commit `756a08a`：嵌套扫描加固——不跟随符号链接、剪枝依赖/构建目录、深度上限；`list_repos` 传入 `exclude_paths`；附 8 个回归测试与 `monarbor doctor` 文档断言命令）。**PyPI 0.4.0 仍是带缺陷的旧版**：从 PyPI 安装的用户请继续避开 `monarbor list`，或从子仓路径安装修复版（`pipx install ./monarbor`）。
 >
-> 现状与规避：① `list` / `list -r` 会崩，`status` / `pull` / `clone` / `exec` 不受影响；② 崩溃是**潜伏**的，仅在 `deepseek-harness/` 装过依赖（出现 `node_modules` 软链环）后才显现，干净 clone 上跑一遍不崩不代表无缺陷；③ 在修复入库前，优先用上面的方式 A，或避开 `monarbor list`。根因、影响面矩阵与待实施的修复方案见 [`docs/MONARBOR_NOTES.md`](./docs/MONARBOR_NOTES.md)。
+> 历史备注：2026-10-08 复核时该缺陷在 PyPI 0.4.0 与子仓 `main` 中均完整存在，当时"已修复（2026-09）"的说法与仓库实际不符（根因、影响面矩阵见 [`docs/MONARBOR_NOTES.md`](./docs/MONARBOR_NOTES.md)），该缺口现已补上。崩溃是**潜伏**的：仅在 `deepseek-harness/` 装过依赖（出现 `node_modules` 软链环）后才显现，干净 clone 上跑一遍不崩不代表无缺陷。
 
 添加子仓：
 

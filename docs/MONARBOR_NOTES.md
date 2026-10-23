@@ -1,15 +1,17 @@
 # monarbor 工具：软链环崩溃的根因与修复状态
 
-> 最后更新：2026-10-08（复核勘误）
-> 状态：**根因已定位、修复方案已记录；修复代码尚未入库**——`jeffkit/monarbor` 的 `main` 与全部远端 ref 均不含本文 §6 所述改动
-> 影响版本：0.3.0、0.4.0（PyPI 与仓库 `main` 均未修复）
+> 最后更新：2026-10-23（修复入库确认）
+> 状态：**已修复并入库（2026-10-23）**——§6 方案随 `jeffkit/monarbor` `main` 落地（commit `756a08a`：嵌套扫描加固 + `list_repos` 传排除集 + 8 个回归测试 + `monarbor doctor`），`__version__` 已同步 0.4.0。**PyPI 0.4.0 仍是修复前旧版**，从 PyPI 安装的用户请避开 `monarbor list` 或改从子仓路径 `pipx install ./monarbor`。
+> 影响版本：0.3.0、0.4.0（PyPI 未重发；仓库 `main` 已修复）
 > 触发仓库：`deepseek-harness`（其 `vendor/cordis` 与 `vendor/include` 两个 workspace 包经 `link:` 互相引入，`pnpm install` 后形成软链环）
 
 ---
 
-## 0. 当前实际状态（2026-10-08 复核）
+## 0. 当前实际状态（2026-10-08 复核；2026-10-23 已解决）
 
-本文早期版本把 §6 的修复描述为"已实施、已入库（提交 `0fc706c` / `debe366`）"，并声称配有 8 个回归测试与 `monarbor doctor`。**该描述与 `jeffkit/monarbor` 仓库实际不符**，现予勘误。
+**2026-10-23 更新**：下表所列缺口已全部补齐——`756a08a` 落地了 `SKIP_SCAN_DIRS`/`MAX_SCAN_DEPTH`/`registered_repo_abs_paths`/不跟随软链加固（`config.py`）、`list_repos` 传 `exclude_paths`（`cli.py`）、`tests/test_nested_scan_safety.py`（恰 8 用例）、`tests/test_version_consistency.py`、`monarbor/doctor.py` 与 `doctor` 命令，且 `__version__` 已同步 0.4.0（本机全量 pytest 84 passed 实测）。下表保留为 2026-10-08 复核的历史记录。
+
+本文早期版本把 §6 的修复描述为"已实施、已入库（提交 `0fc706c` / `debe366`）"，并声称配有 8 个回归测试与 `monarbor doctor`。**该描述与 `jeffkit/monarbor` 仓库当时实际不符**，现予勘误。
 
 复核方法：`git clone git@github.com:jeffkit/monarbor.git` 后，在 `main`（HEAD `664bb67`，`chore: bump version to 0.4.0`，2026-04-16）上直接检查源码、git 对象与测试计数。
 
@@ -28,7 +30,7 @@
 | `__version__` 同步到 0.4.0 | ❌ 未修：`monarbor/__init__.py` 仍为 `"0.3.0"`，与 `pyproject.toml` 的 `0.4.0` 漂移 |
 | `monarbor doctor` 命令 | ❌ 不存在（无 `doctor.py`）；`docs/DOC_ASSERTIONS.yml` 因此当前**不可执行** |
 
-**结论**：**缺陷 A（跟随软链、不剪枝、无深度上限）与缺陷 B（`list_repos` 漏传 `exclude_paths`）在现行代码中完整存在**，PyPI 0.4.0 与仓库 `main` 一致。§6 的方案本身有效，但需要**重新实施并入库**；在此之前，本文只能作为根因分析与实施方案记录，不能作为"已修复"的证据。
+**结论（2026-10-08 时点，现已解决）**：当时**缺陷 A（跟随软链、不剪枝、无深度上限）与缺陷 B（`list_repos` 漏传 `exclude_paths`）在现行代码中完整存在**，PyPI 0.4.0 与仓库 `main` 一致。§6 的方案本身有效。**2026-10-23 该方案已按原文重新实施并入库（`756a08a`）**，本文可同时作为根因分析与已落地方案的存档。
 
 > 旁证：早期版本记录的操作路径为 `/Users/kong/...`，说明该修复当时只落在**另一台机器的本地工作树**，从未推送到远端。2026-10-01 的全仓审计对 monarbor 的 9/10 评分同样基于那份本地树。
 
@@ -144,9 +146,9 @@ PyPI 上 `monarbor` 最新为 0.4.0。0.4.0 里的 PR #1（`fix/nested-monorepo-
 
 ---
 
-## 6. 修复方案（尚未入库）
+## 6. 修复方案（已于 2026-10-23 按此实施入库，commit `756a08a`）
 
-monarbor 已登记为本大仓第 21 个子仓（`monarbor/`），修复应就地落在那里。**下列改动目前只存在于本文档，需要重新实施、提交并推送。**
+monarbor 已登记为本大仓子仓（`monarbor/`），修复就地落在那里。**下列改动已于 2026-10-23 实施并推送**；本节保留为方案原文。
 
 ### 6.1 代码改动
 
@@ -202,8 +204,7 @@ pipx install --force <infra4agent 路径>/monarbor
 
 ## 7. 上游状态
 
-- 上游 `jeffkit/monarbor` 已并入 PR #1 并发布 0.4.0，但**未覆盖软链环与剪枝**（见 §5）；`main` 上也不含本文 §6 的修复。
-- 本仓修复可反向提 PR 给上游；在此之前，任何版本的 `monarbor`（含 PyPI 0.4.0）都带缺陷 A/B。
+- 上游 `jeffkit/monarbor` 已并入 PR #1 并发布 0.4.0，但**未覆盖软链环与剪枝**（见 §5）；本仓修复（`756a08a`）可反向提 PR 给上游。PyPI 0.4.0 仍带缺陷 A/B，直至上游发新版。
 - ⚠️ 另有一份**旧 checkout** 在 `/Users/kong/projects/force-lab-b/infra/monarbor`（0.3.0、无修复，登记在 force-lab-b 大仓）。若从该路径安装，缺陷同样存在。
 
 ---
@@ -216,5 +217,6 @@ pipx install --force <infra4agent 路径>/monarbor
 | 2026-09-28 | 在**另一台机器的本地工作树**实施修复方案（不跟软链 + 剪枝 + 深度上限 + `list_repos` 传排除集）并验证；该改动**未推送到远端** |
 | 2026-10-01 | 全仓文档↔代码审计基于该本地树给 monarbor 打 9/10（结论对本地树成立，对远端仓库不成立） |
 | **2026-10-08** | **复核勘误**：确认 `jeffkit/monarbor` 的 `main` 与全部远端 ref 均无 §6 改动（提交对象不存在、测试文件不存在、测试数仍 58、`__version__` 仍 0.3.0）；本文档与根 README / AGENTS / ARCHITECTURE 的"已修复"表述一并改为"未入库"；缺陷 A/B 仍待修复 |
+| **2026-10-23** | **修复入库**：§6 方案随 `756a08a` 落地子仓 `main`（扫描加固 + 缺陷 B 正解 + 8 回归测试 + `doctor` 命令 + `__version__` 同步 0.4.0）；根 README / ARCHITECTURE 状态表述同步；PyPI 仍未重发（0.4.0 依旧版） |
 
-**待办**：在 `monarbor` 子仓重新实施 §6 并推送，之后本文档 §0 的"未入库"状态才可撤销。
+**待办**：~~在 `monarbor` 子仓重新实施 §6 并推送~~（已完成，`756a08a`）。剩余：上游反哺 PR 与 PyPI 重发由 owner 决定。

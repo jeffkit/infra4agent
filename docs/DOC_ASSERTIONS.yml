@@ -1,26 +1,20 @@
 # 文档 ↔ 代码 跨仓事实断言表
 #
 # 来源：2026-10-01 全仓「文档↔代码」审计（docs/DOC_CODE_AUDIT-2026-10-01.md），
-# 把其中机器可校验的跨仓事实沉淀于此，设计上由 `monarbor doctor` 逐条执行：
+# 把其中机器可校验的跨仓事实沉淀于此，由 `monarbor doctor` 逐条执行：
 #
 #     monarbor doctor            # 在大仓根运行；失败即漂移，退出码 1
-#     monarbor doctor --json     # CI 消费
+#     monarbor doctor --json     # CI / nightly 消费
 #
-# ⚠️ 状态：**执行器尚未落地（2026-10-08 复核）**
-#   `monarbor doctor`（含 doctor.py 与 tests/test_doctor.py）并未随子仓 `monarbor` 入库，
-#   `jeffkit/monarbor` 的 main 与全部远端 ref 均无该命令。因此本表当前**不可自动执行**，
-#   只能人工比对；CI 也尚未接入。在 doctor 入库并接入前，请勿把"本表全绿"当作验收依据。
-#   旁证：本表曾引用 `monarbor/tests/test_nested_scan_safety.py`，而该文件至今不存在
-#   （说明本表从未在真实树上跑过）；该引用已随本次勘误移除。
+# ✅ 执行器已落地（2026-10-23 确认）：`monarbor doctor`（doctor.py 与
+#   tests/test_doctor.py）已随子仓 `monarbor` 入库（`756a08a`），本表机器
+#   可校验；每日自动运行的部署单元见子仓 monarbor `deploy/`（实装与否
+#   owner 拍板，plaita#318 建议③）。
 #
-# ⚠️ 已知失败条目（2026-10-08 人工离线比对，非 doctor 输出）
-#   本表 47 条中，离线可判定的 36 条里有 4 条在真实树上失败——它们对应的"修复"
-#   同样未推送（见 DOC_CODE_AUDIT-2026-10-01.md 顶部修订注记）：
-#     * im-agentproc/readme-no-only-ilink   → README.md:61 仍写 "iLink is the only real adapter today"
-#     * hil-mcp/readme-no-uvx-hil           → README.md:24 仍写 `uvx hil-mcp`（PyPI 包名实为 hitl-mcp）
-#     * hil-mcp/agents-no-uvx-hil           → AGENTS.md:20,31 同上
-#     * marketplace/readme-23-not-11        → README.md:17 仍写「MCP 工具（11 个）」，实际 23 个
-#   这 4 条是**真实的文档漂移**，修好子仓文档后即转绿；不要为了"全绿"而放宽断言。
+# ⚠️ 已知未清红（2026-10-23 doctor 实跑）：
+#     * im-agentproc/readme-no-only-ilink → im-agentproc/README.md 仍写
+#       "only real adapter"。这是**真实的文档漂移**，修好子仓文档后即转绿；
+#       不要为了"全绿"而放宽断言。
 #
 # 维护约定（对应 ARCHITECTURE §9）：
 #   * 改跨仓依赖边 / 改文档声称的计数 / 修复某条漂移时，同步更新本表；
@@ -306,27 +300,21 @@ assertions:
     pattern: X-Admin-API-Key
 
   # ── 大仓工具 ─────────────────────────────────────────────
-  # ⚠️ 2026-10-08 复核：子仓 monarbor 的修复（不跟软链 + 剪枝 + 深度上限 +
-  #    list_repos 传 exclude_paths + 8 个回归测试 + doctor）**均未入库**，
-  #    详见 MONARBOR_NOTES.md §0。原 `monarbor/scan-safety-regression-8`
-  #    断言依赖的 tests/test_nested_scan_safety.py 至今不存在，故停用；
-  #    待修复真正入库后，取消注释并恢复该断言。
-  #
-  # - id: monarbor/scan-safety-regression-8
-  #   desc: '软链环加固恰有 8 个回归测试（MONARBOR_NOTES 口径）'
-  #   check: regex_count
-  #   file: monarbor/tests/test_nested_scan_safety.py
-  #   pattern: '^def test_'
-  #   equals: 8
+  # 2026-10-23：嵌套扫描加固、缺陷 B 正解（list_repos 传 exclude_paths）、
+  # 8 个回归测试与 doctor 已随子仓 monarbor main 入库（756a08a，
+  # tests/test_nested_scan_safety.py 恰 8 用例实测在库），scan-safety 断言
+  # 按本节原注记恢复启用；原「list-defect-not-yet-fixed」哨兵断言按其自身
+  # 约定删除（缺陷已修，哨兵转红即预期）。
 
-  - id: monarbor/list-defect-not-yet-fixed
-    desc: '哨兵：monarbor list_repos 仍漏传 exclude_paths（缺陷 B 未修）；修复入库后本条会失败，届时请同步 README/ARCHITECTURE/MONARBOR_NOTES 的状态表述'
-    check: regex_contains
-    file: monarbor/monarbor/cli.py
-    pattern: 'nested = find_nested_monorepos\(config\.root\)'
+  - id: monarbor/scan-safety-regression-8
+    desc: '软链环加固恰有 8 个回归测试（MONARBOR_NOTES 口径）'
+    check: regex_count
+    file: monarbor/tests/test_nested_scan_safety.py
+    pattern: '^def test_'
+    equals: 8
 
   - id: monarbor/version-0_4_0
-    desc: 'monarbor pyproject 版本 0.4.0（注：包内 __version__ 仍为 0.3.0，漂移未修）'
+    desc: 'monarbor pyproject 版本 0.4.0（包内 __version__ 已同步，2026-10-23 核验）'
     check: regex_contains
     file: monarbor/pyproject.toml
     pattern: '^version = "0\.4\.0"'
@@ -351,3 +339,30 @@ assertions:
     check: regex_not_contains
     file: lavs/REGISTRY.md
     pattern: '`lavs install`'
+
+  # ── plaita 治理账本（gov）─────────────────────────────────
+  # 2026-10-23 新增（plaita#318 建议②）：账本在 plaita 仓
+  # docs/governance/architecture.yaml（分支 gov-architecture，合并后随
+  # plaita main 生效），经 yaml_path_equals 按点分路径比对。复审到期顺延
+  # review_by 时，须同步 gov/review-by-not-expired 的 expected（只改一边即红）。
+
+  - id: gov/runtime-valid-set
+    desc: 'plaita 治理账本的合法 runtime 集与三平台实况一致（go=plaita-go/python=plaita/rust=plaita-rs；同 plaita/server/runtime_queues.py VALID_RUNTIMES）'
+    check: yaml_path_equals
+    file: plaita/docs/governance/architecture.yaml
+    path: gov.runtime_valid_set
+    expected: [go, python, rust]
+
+  - id: gov/owner-not-tbd
+    desc: 'plaita 治理账本 owner 已落实（非 TBD 占位）'
+    check: yaml_path_equals
+    file: plaita/docs/governance/architecture.yaml
+    path: gov.owner
+    expected: jeffkit
+
+  - id: gov/review-by-not-expired
+    desc: 'plaita 治理账本复审期限钉在 2027-01-31：到期复审后顺延账本 review_by 并同步本条 expected'
+    check: yaml_path_equals
+    file: plaita/docs/governance/architecture.yaml
+    path: gov.review_by
+    expected: '2027-01-31'
