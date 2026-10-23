@@ -24,6 +24,7 @@ AI Agent **基础设施逻辑大仓** — 用 [monarbor](https://pypi.org/projec
 | [plaita](https://github.com/jeffkit/plaita) | Python 逻辑编排运行时（JSON / `@flow`） |
 | [plaita-nodes](https://github.com/jeffkit/plaita-nodes) | plaita 通用节点集（AgentRun / Capture / Hitl / Notify / WriteFile） |
 | [plaita-go](https://github.com/jeffkit/plaita-go) | plaita 的 Golang 引擎 + worker 运行时（表达式求值与 Python 版语义 golden 对齐） |
+| [plaita-rs](https://github.com/jeffkit/plaita-rs) | plaita 的 Rust 版引擎 + IR 解析（仅运行时，无 worker） |
 | [lavs](https://github.com/jeffkit/lavs) | Local Agent View：Agent ↔ 可视化 UI 协议 |
 | [web-bridge](https://github.com/jeffkit/web-bridge) | 注入式 DOM/a11y 桥：Agent 操控 Electron/Tauri 页面 |
 | [browser-bridge](https://github.com/jeffkit/browser-bridge) | 浏览器扩展（Chromium/Firefox）+ MCP gateway：远程 Agent 操控本地真实浏览器 |
@@ -35,7 +36,7 @@ AI Agent **基础设施逻辑大仓** — 用 [monarbor](https://pypi.org/projec
 | [tunely](https://github.com/jeffkit/tunely) | WebSocket 反向代理隧道：内网服务经公网 HTTPS 可达 |
 | [monarbor](https://github.com/jeffkit/monarbor) | **本大仓自身的命令行工具**：一个 `mona.yaml` 管全部子仓（list/status/clone/pull/exec/checkout/init/add/local） |
 
-分层与依赖关系见架构文档；**清单以 [`mona.yaml`](./mona.yaml) 为准**（本表须与其保持同步，当前 21 个子仓，含大仓工具 monarbor 自身）。
+分层与依赖关系见架构文档；**清单以 [`mona.yaml`](./mona.yaml) 为准**（本表须与其保持同步，当前 22 个子仓，含大仓工具 monarbor 自身）。
 
 ---
 

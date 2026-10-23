@@ -137,6 +137,7 @@ flowchart TB
 | `plaita` | Plaita | Python 逻辑编排运行时（JSON/@flow；曾用路径 loki/pyloki） | 编排（流程引擎向） |
 
 | `plaita-go` | plaita-go | plaita 的 Golang 引擎 + worker 运行时：flow 引擎、表达式求值（与 Python 版语义 golden 对齐）、部署 IR 契约层（fail-closed 拒载） | 编排（流程引擎向） |
+| `plaita-rs` | plaita-rs | plaita 的 Rust 版引擎 + IR 解析（仅运行时，无 worker） | 编排（流程引擎向） |
 | `lavs` | LAVS | CLI-first 结构化 View 协议：content-type 为主抽象，view bundle 可跨 Agent 复用，配独立轻量 Host 渲染；含 TS/Py SDK | Agent 视图 |
 | `web-bridge` | web-bridge | 注入式 DOM/a11y 桥：MCP/CLI 操控桌面 WebView 页面 | 页面操控 |
 | `browser-bridge` | browser-bridge | MV3 扩展（Chromium+Firefox）+ MCP gateway：远程 Agent 操控本地真实浏览器；serve/mcp/relay 三部署形态，多浏览器 browserId 路由 | 页面操控 |
