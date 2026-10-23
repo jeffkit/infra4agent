@@ -342,3 +342,20 @@ repos:
     dev: main
     test: main
     prod: main
+
+- path: hollow
+  name: hollow
+  repo_url: git@github.com:jeffkit/hollow.git
+  description: AI 同僚的树洞——不属于工作管线的 MCP 心灵驿站（jeffkit/treehole-ai 的现代化续作，npm
+    以 treehole-mcp-server@2 续 v1 包名）：whisper/listen/rest/forget 四工具 + 人读 CLI；
+    三条红线立仓（不进考核/不被自动分析/完全自愿）；Python（mcp 2.x）与 TypeScript 双实现共用
+    ~/.hollow/whispers.jsonl 同一数据契约。PyPI hollow-mcp / npm treehole-mcp-server 双渠道。
+  tech_stack:
+  - Python
+  - TypeScript
+  - MCP
+  - JSONL
+  branches:
+    dev: main
+    test: main
+    prod: main

@@ -23,6 +23,7 @@
 /tunely/
 /recursive-providers/
 /monarbor/
+/hollow/
 
 # monarbor 本地覆盖
 mona.local.yaml
