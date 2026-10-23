@@ -366,3 +366,11 @@ assertions:
     file: plaita/docs/governance/architecture.yaml
     path: gov.review_by
     expected: '2027-01-31'
+
+- id: gov/version-dimensions
+  assertion: 载体信封版本维度收敛为两维（wire schema + IR），tenant_generation 仅身份不计预算
+  path: plaita/docs/governance/architecture.yaml
+  path_type: yaml_path
+  expected:
+    path: version_dimensions
+    expected: ["wire_schema", "ir"]
