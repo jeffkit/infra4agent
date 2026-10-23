@@ -64,7 +64,7 @@ monarbor 自身也登记为本仓子仓 `monarbor/`（改工具逻辑就在那�
 
 ## 当前状态
 
-**当前里程碑：** 22 子仓已登记（含从 ilink-hub 抽离的 im-agentproc、DeepSeek Harness 上游镜像及其仓外插件集 dsh-lavs-integration、编排节点层 plaita-nodes、页面操控层 browser-bridge、公网隧道 tunely、recursive 配套 provider 预设目录 recursive-providers、plaita 的 Golang 引擎 plaita-go 与 Rust 引擎 plaita-rs，以及本大仓工具 monarbor 自身——已部署 crypto 暴露本机 DSH）；架构文档持续同步。
+**当前里程碑：** 23 子仓已登记（含从 ilink-hub 抽离的 im-agentproc、DeepSeek Harness 上游镜像及其仓外插件集 dsh-lavs-integration、编排节点层 plaita-nodes、页面操控层 browser-bridge、公网隧道 tunely、recursive 配套 provider 预设目录 recursive-providers、plaita 的 Golang 引擎 plaita-go 与 Rust 引擎 plaita-rs、AI 同僚的树洞 hollow（PyPI hollow-mcp / npm treehole-mcp-server@2 双渠道），以及本大仓工具 monarbor 自身——已部署 crypto 暴露本机 DSH）；架构文档持续同步。
 
 ## 深入阅读
 
