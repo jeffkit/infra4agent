@@ -367,10 +367,45 @@ assertions:
     path: gov.review_by
     expected: '2027-01-31'
 
-- id: gov/version-dimensions
-  assertion: 载体信封版本维度收敛为两维（wire schema + IR），tenant_generation 仅身份不计预算
-  path: plaita/docs/governance/architecture.yaml
-  path_type: yaml_path
-  expected:
-    path: version_dimensions
-    expected: ["wire_schema", "ir"]
+  - id: gov/version-dimensions
+    desc: 'plaita 治理账本的信封版本维度收敛为两维（#328 F 线；tenant_generation 是身份字段不计预算）。7a64e89 的骨架缩进错误致断言表整表加载失败，2026-10-24 修复入位（expected 与账本 gov.version_dimensions 逐序一致）'
+    check: yaml_path_equals
+    file: plaita/docs/governance/architecture.yaml
+    path: gov.version_dimensions
+    expected: [ir, wire_schema]
+
+  # plaita#331 ⑤：自带注册面能力矩阵全量字面量（24 node type）。差分三处联动：
+  # 注册表（plaita/node/capabilities.py shipped_capability_matrix）↔ plaita 账本
+  # gov.capability_matrix（plaita 测试差分格 + scripts/export_capability_matrix.py
+  # --check[ci-slow nightly] 拦「注册表新增 node_type 而矩阵未变」）↔ 本条 expected
+  # （拦「账本改了而大仓断言未同步」）。新增/改声明节点的 PR 须同步三处。
+  - id: gov/capability-matrix
+    desc: 'plaita 自带注册面能力矩阵与账本逐键一致（#331；生成源 scripts/export_capability_matrix.py）'
+    check: yaml_path_equals
+    file: plaita/docs/governance/architecture.yaml
+    path: gov.capability_matrix
+    expected:
+      approval: [event_bus, suspend:root]
+      assignment: []
+      case: []
+      child: []
+      code: [sandbox]
+      delay: [event_bus, queue, suspend:root]
+      end: []
+      event: [event_bus, suspend:root]
+      filter: []
+      find: []
+      http: [network]
+      http_callback: [event_bus, suspend:root]
+      if: []
+      kafka_queue: [event_bus, queue, suspend:root]
+      loop: []
+      map: []
+      mock: []
+      parallel: []
+      redis_queue: [event_bus, queue, suspend:root]
+      reduce: []
+      reference: []
+      start: []
+      switch: []
+      while: []
