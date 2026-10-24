@@ -1,0 +1,1 @@
+../../../hollow/skill/SKILL.md
