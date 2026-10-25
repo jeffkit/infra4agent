@@ -380,32 +380,32 @@ assertions:
   # --check[ci-slow nightly] 拦「注册表新增 node_type 而矩阵未变」）↔ 本条 expected
   # （拦「账本改了而大仓断言未同步」）。新增/改声明节点的 PR 须同步三处。
   - id: gov/capability-matrix
-    desc: 'plaita 自带注册面能力矩阵与账本逐键一致（#331；生成源 scripts/export_capability_matrix.py）'
+    desc: 'plaita 自带注册面执行台阶矩阵与账本逐键一致（#331；两级终版 inline/managed，生成源 scripts/export_capability_matrix.py）'
     check: yaml_path_equals
     file: plaita/docs/governance/architecture.yaml
     path: gov.capability_matrix
     expected:
-      approval: [event_bus, suspend:root]
-      assignment: []
-      case: []
-      child: []
-      code: [sandbox]
-      delay: [event_bus, queue, suspend:root]
-      end: []
-      event: [event_bus, suspend:root]
-      filter: []
-      find: []
-      http: [network]
-      http_callback: [event_bus, suspend:root]
-      if: []
-      kafka_queue: [event_bus, queue, suspend:root]
-      loop: []
-      map: []
-      mock: []
-      parallel: []
-      redis_queue: [event_bus, queue, suspend:root]
-      reduce: []
-      reference: []
-      start: []
-      switch: []
-      while: []
+      approval: managed
+      assignment: inline
+      case: inline
+      child: inline
+      code: inline
+      delay: managed
+      end: inline
+      event: managed
+      filter: inline
+      find: inline
+      http: inline
+      http_callback: managed
+      if: inline
+      kafka_queue: managed
+      loop: inline
+      map: inline
+      mock: inline
+      parallel: inline
+      redis_queue: managed
+      reduce: inline
+      reference: inline
+      start: inline
+      switch: inline
+      while: inline
