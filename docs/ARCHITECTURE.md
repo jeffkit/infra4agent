@@ -149,6 +149,7 @@ flowchart TB
 | `dsh-lavs-integration` | dsh-lavs-integration | DSH 仓外插件集：LAVS host 适配 + 原生右栏视图 tab（纯项目作用域）+ Tasks tab + `lavs` CLI/Skill，经官方 profile+bundle 挂载，零上游改动 | Agent 运行时（DSH 插件） |
 | `plaita-nodes` | plaita-nodes | plaita 通用节点集（22 节点）：Agent/LLM/决策原子（agentrun/llm/decision）· 流程控制（gate/rate_limit/report/hitl/hitl_await）· 出害口（github_comment/git_publish/notify/writefile/parse_json）· 凭据化连接器（api_request/generic_webhook/sql_query/email_send + IM webhook×4） | 编排插件（节点层） |
 | `monarbor` | Monarbor | **本大仓自身的命令行工具**：一个 `mona.yaml` 管全部子仓（list/status/clone/pull/exec/checkout/add）；嵌套扫描加固与 `doctor` 文档断言命令已入库（`756a08a`），nightly 部署单元见仓内 `deploy/` | 大仓工具（管理本仓自身） |
+| `hollow` | Hollow | AI 同僚的树洞：不属于工作管线的 MCP 心灵驿站（whisper/listen/rest/forget 四工具 + 人读 CLI；PyPI hollow-mcp / npm treehole-mcp-server@2 双渠道，`~/.hollow/whispers.jsonl` 单一数据契约） | 协同（非管线） |
 
 ---
 
@@ -323,7 +324,7 @@ flowchart LR
 9. ~~**ilink-hub-bridge 与 im-agentproc 的关系**~~ **已成定局（2026-10 核验）**：ilink-hub 0.4.0 起物理拆除 bridge（无 src/bridge、无 ilink-hub-bridge bin），IM→AgentProc 唯一正式入口为 im-agentproc（agentproc profile，P0 exec）；hub 现存 Agent 面为 A2A MCP（list_agents/call_agent）。
 10. **DSH×LAVS 集成已转纯插件形态**（[ADR-2026-09-06](./ADR-2026-09-06-dsh-pure-plugin-form.md)）：`dsh-lavs-integration` 子仓经官方 profile/bundle 机制仓外挂载，零上游文件改动；8/16 的 fork 集成与 ADR-2026-08-16 的"暂不整合"决议一并由该 ADR 取代。fork 分支封存留档，上游 PR 通道仍关闭（`submit-pr.sh` 作废）。
 11. **web-bridge 与 browser-bridge 分工**：web-bridge 主张「本机 Agent 注入操控 Electron/Tauri 等桌面 WebView」；browser-bridge 主张「远程/本机 Agent 经浏览器扩展 + gateway 操控真实浏览器（Chrome/Edge）」。协议形状有意一致（`{id,method,params}` + `@eN`）降低心智成本，但两者无代码依赖，无合并计划。
-12. ~~**大仓工具 monarbor 的 `list` 崩溃尚未修复**~~ **已修复入库（2026-10-23 核验）**：缺陷 A（嵌套扫描不剪枝 `node_modules`、跟随符号链接，`config.py`）与缺陷 B（`list_repos` 漏传 `exclude_paths`，`cli.py`）的修复、8 个回归测试（`tests/test_nested_scan_safety.py`）与 `monarbor doctor` 文档断言命令已一并随子仓 `monarbor` `main` 入库（commit `756a08a`）。**PyPI 0.4.0 仍是带缺陷的旧版**：从 PyPI 安装的用户继续避开 `monarbor list`，或改从子仓路径 `pipx install ./monarbor`。缺陷为**潜伏**：干净 clone（无 `node_modules`）上不崩，装过依赖才显现。根因剖析与修复方案存档见 [MONARBOR_NOTES.md](./MONARBOR_NOTES.md)。
+12. ~~**大仓工具 monarbor 的 `list` 崩溃尚未修复**~~ **已修复并上 PyPI（2026-10-28 核验）**：缺陷 A（嵌套扫描不剪枝 `node_modules`、跟随符号链接，`config.py`）与缺陷 B（`list_repos` 漏传 `exclude_paths`，`cli.py`）的修复、8 个回归测试（`tests/test_nested_scan_safety.py`）与 `monarbor doctor` 文档断言命令已随子仓 `monarbor` `main` 入库（commit `756a08a`），并随 **v0.5.0**（2026-10-28）上 PyPI——`pipx install monarbor`（≥0.5.0）即含修复，内网镜像同步滞后时显式指定官方源。缺陷为**潜伏**：干净 clone（无 `node_modules`）上不崩，装过依赖才显现。根因剖析与修复方案存档见 [MONARBOR_NOTES.md](./MONARBOR_NOTES.md)。
 
 ---
 

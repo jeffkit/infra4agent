@@ -50,10 +50,10 @@ assertions:
     pattern: '\*\*已修复（2026-09）\*\*|修复已落在本仓子仓'
 
   - id: root/readme-pipx-bootstrap
-    desc: 'README 快速开始保留 pipx 从子仓路径安装 monarbor 的方式（注：该方式装的同样是未修缺陷的 0.4.0）'
+    desc: 'README 快速开始保留 PyPI 直装 monarbor 的方式（≥0.5.0；内网镜像滞后时附官方源参数）'
     check: regex_contains
     file: README.md
-    pattern: pipx install \./monarbor
+    pattern: pipx install monarbor$
 
   - id: root/agents-mail-repo-name
     desc: 'AGENTS.md 使用真实子仓名 agently-mail-client'
@@ -313,11 +313,11 @@ assertions:
     pattern: '^def test_'
     equals: 8
 
-  - id: monarbor/version-0_4_0
-    desc: 'monarbor pyproject 版本 0.4.0（包内 __version__ 已同步，2026-10-23 核验）'
+  - id: monarbor/version-0_5_1
+    desc: 'monarbor pyproject 版本 0.5.1（包内 __version__ 已同步；0.5.0 反馈四项修复随此版，2026-10-28 核验）'
     check: regex_contains
     file: monarbor/pyproject.toml
-    pattern: '^version = "0\.4\.0"'
+    pattern: '^version = "0\.5\.1"'
 
   # ── 隧道 ─────────────────────────────────────────────────
   - id: tunely/deploy-9080-dsh

@@ -35,8 +35,9 @@ AI Agent **基础设施逻辑大仓** — 用 [monarbor](https://pypi.org/projec
 | [dsh-lavs-integration](https://github.com/jeffkit/dsh-lavs-integration) | DSH 仓外插件集：经官方 profile+bundle 挂载 LAVS host 适配与右栏视图 tab，零上游改动 |
 | [tunely](https://github.com/jeffkit/tunely) | WebSocket 反向代理隧道：内网服务经公网 HTTPS 可达 |
 | [monarbor](https://github.com/jeffkit/monarbor) | **本大仓自身的命令行工具**：一个 `mona.yaml` 管全部子仓（list/status/clone/pull/exec/checkout/init/add/local） |
+| [hollow](https://github.com/jeffkit/hollow) | AI 同僚的树洞——不属于工作管线的 MCP 心灵驿站（whisper/listen/rest/forget；PyPI hollow-mcp / npm treehole-mcp-server@2 双渠道） |
 
-分层与依赖关系见架构文档；**清单以 [`mona.yaml`](./mona.yaml) 为准**（本表须与其保持同步，当前 22 个子仓，含大仓工具 monarbor 自身）。
+分层与依赖关系见架构文档；**清单以 [`mona.yaml`](./mona.yaml) 为准**（本表须与其保持同步，当前 23 个子仓，含大仓工具 monarbor 自身）。
 
 ---
 
@@ -49,9 +50,10 @@ cd infra4agent
 grep -E '^(- path:|  repo_url:)' mona.yaml | sed 's/^[^:]*: *//' | paste - - | \
   while read -r path url; do git clone "$url" "$path"; done
 
-# 方式 B：装 monarbor 后统一管理（可 clone/status/pull/exec 全套）
-git clone git@github.com:jeffkit/monarbor.git
-pipx install ./monarbor
+# 方式 B：装 monarbor 后统一管理（可 clone/status/pull/exec 全套；PyPI ≥0.5.0）
+pipx install monarbor
+# 本机 pip 默认走内网镜像时新版本同步有滞后，装不到就显式指定官方源：
+# pipx install monarbor --pip-args='--index-url https://pypi.org/simple --extra-index-url https://pypi.org/simple'
 
 monarbor clone -b prod --jobs 4 # 多数子仓目前用 main
 monarbor status                 # 分支 / 脏检查 / 同步（推荐）
