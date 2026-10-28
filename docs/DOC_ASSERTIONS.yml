@@ -313,11 +313,11 @@ assertions:
     pattern: '^def test_'
     equals: 8
 
-  - id: monarbor/version-0_5_2
-    desc: 'monarbor pyproject 版本 0.5.2（包内 __version__ 已同步；--init 空表起步+版本页说明随此版，2026-10-28 核验）'
+  - id: monarbor/version-0_5_3
+    desc: 'monarbor pyproject 版本 0.5.3（包内 __version__ 已同步；CHANGELOG 回填+自动 Release notes 随此版，2026-10-28 核验）'
     check: regex_contains
     file: monarbor/pyproject.toml
-    pattern: '^version = "0\.5\.2"'
+    pattern: '^version = "0\.5\.3"'
 
   # ── 隧道 ─────────────────────────────────────────────────
   - id: tunely/deploy-9080-dsh
