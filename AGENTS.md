@@ -43,22 +43,22 @@
 ## 常用命令
 
 ```bash
-# 未装工具时，直接按 mona.yaml 拉全部子仓（推荐：monarbor 的 list 缺陷尚未修复，见下）
+# 未装工具时，直接按 mona.yaml 拉全部子仓（备用路径；推荐先装 monarbor，见下）
 grep -E '^(- path:|  repo_url:)' mona.yaml | sed 's/^[^:]*: *//' | paste - - | \
   while read -r path url; do git clone "$url" "$path"; done
 
-# 或装 monarbor 统一管理（须从子仓路径安装：pipx install --force ./monarbor——PyPI 0.4.0 含 list 崩溃缺陷，子仓 main 已修）
-git clone git@github.com:jeffkit/monarbor.git && pipx install ./monarbor
-monarbor status                 # list / list -r / status / pull / clone / exec 均正常（2026-10-23 缺陷 B 修复后）
+# 或装 monarbor 统一管理（PyPI ≥0.5.0 已含修复；本机 pip 默认走腾讯内网镜像同步有延迟，须指定官方源）
+pipx install monarbor --pip-args='--index-url https://pypi.org/simple --extra-index-url https://pypi.org/simple'
+monarbor status                 # list / list -r / status / pull / clone / exec 均正常（0.5.0 起含 PyPI 直装）
 monarbor clone -b prod --jobs 4
 monarbor pull
 monarbor add --path <p> --name "<n>" --url <git-url> \
   --dev-branch main --test-branch main --prod-branch main
 ```
 
-monarbor 自身也登记为本仓子仓 `monarbor/`（改工具逻辑就在那里改并提交）。本机经 pipx 从该路径安装。
-`monarbor list` 的 deepseek-harness 软链环崩溃（`OSError [Errno 63]`，缺陷 A/B）已于 2026-10-23 在子仓修复
-（嵌套扫描加固：不跟软链/剪枝/深度上限）并随 pipx 重装生效——`monarbor list` 现可正常使用。
+monarbor 自身也登记为本仓子仓 `monarbor/`（改工具逻辑就在那里改并提交）。
+`monarbor list` 的 deepseek-harness 软链环崩溃（`OSError [Errno 63]`）已于 2026-10-23 修复（嵌套扫描加固：
+不跟软链/剪枝/深度上限），并随 **v0.5.0**（2026-10-28）上 PyPI——`monarbor list` 现可正常使用。
 
 改子仓：`cd <path>` 后在该 git 仓内提交；大仓只提交配置/文档变更。
 
